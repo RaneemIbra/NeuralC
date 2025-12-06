@@ -19,7 +19,7 @@ double tanH_activation(const double input) {
 }
 
 double soft_plus_activation(const double input) {
-    return log(1 + exp(input));
+    return log(1.0 + exp(input));
 }
 
 double swish_activation(const double input) {
