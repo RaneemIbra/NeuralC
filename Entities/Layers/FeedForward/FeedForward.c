@@ -1,4 +1,5 @@
 #include "FeedForward.h"
+#include "../../../Utils/Initializers/Initializers.h"
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
@@ -20,24 +21,22 @@ void init_feed_forward(FeedForward* layer, const int inputs_amount, const int ne
     layer->neurons_amount = neurons_amount;
     layer->activation_function = activation_function;
 
-    size_t weight_count = (size_t)neurons_amount * (size_t)inputs_amount;
+    const size_t weight_count = (size_t)neurons_amount * (size_t)inputs_amount;
     layer->weights = (double*)malloc(weight_count * sizeof(double));
     if (layer->weights == NULL) {
         layer->biases = NULL;
         layer->outputs = NULL;
         return;
     }
-    if (weights_initializer != NULL) {
-        weights_initializer(
-            layer->weights,
-            inputs_amount,
-            neurons_amount,
-            neurons_amount,
-            inputs_amount
-        );
-    } else {
-        memset(layer->weights, 0, weight_count * sizeof(double));
-    }
+    apply_initializer(
+        weights_initializer,
+        layer->weights,
+        inputs_amount,
+        neurons_amount,
+        neurons_amount,
+        inputs_amount
+    );
+
 
     layer->biases = (double*)malloc(sizeof(double) * (size_t)neurons_amount);
     if (layer->biases == NULL) {
@@ -46,7 +45,7 @@ void init_feed_forward(FeedForward* layer, const int inputs_amount, const int ne
         layer->outputs = NULL;
         return;
     }
-    memset(layer->biases, 0, sizeof(double) * (size_t)neurons_amount);
+    apply_bias_initializer(bias_zero_init, layer->biases, neurons_amount, 0.0);
 
     layer->outputs = (double*)malloc(sizeof(double) * (size_t)neurons_amount);
     if (layer->outputs == NULL) {

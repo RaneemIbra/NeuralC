@@ -8,8 +8,8 @@ int main(void) {
     const int inputs = 3;
     const int neurons = 2;
 
-    init_feed_forward(&layer, inputs, neurons, relu_activation, xavier_uniform_init);
-    init_feed_forward(&layer2, inputs, neurons, relu_activation, he_uniform_init);
+    init_feed_forward(&layer, inputs, neurons, relu_activation, get_initializer(INIT_XAVIER_UNIFORM));
+    init_feed_forward(&layer2, inputs, neurons, relu_activation, get_initializer(INIT_HE_UNIFORM));
 
     const double in[] = {1.0, 2.0, -1.0};
     forward_pass(&layer, in);
