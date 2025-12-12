@@ -1,10 +1,9 @@
 #include "FeedForward.h"
-
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 
-void init_feed_forward(FeedForward* layer, const int inputs_amount, const int neurons_amount, double (*activation_function)(double)) {
+void init_feed_forward(FeedForward* layer, const int inputs_amount, const int neurons_amount, double (*activation_function)(double), const WeightsInitializer weights_initializer) {
     if (!layer) return;
 
     if (inputs_amount < 1 || neurons_amount < 1) {
@@ -28,7 +27,17 @@ void init_feed_forward(FeedForward* layer, const int inputs_amount, const int ne
         layer->outputs = NULL;
         return;
     }
-    memset(layer->weights, 0, weight_count * sizeof(double));
+    if (weights_initializer != NULL) {
+        weights_initializer(
+            layer->weights,
+            inputs_amount,
+            neurons_amount,
+            neurons_amount,
+            inputs_amount
+        );
+    } else {
+        memset(layer->weights, 0, weight_count * sizeof(double));
+    }
 
     layer->biases = (double*)malloc(sizeof(double) * (size_t)neurons_amount);
     if (layer->biases == NULL) {

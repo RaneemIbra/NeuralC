@@ -7,4 +7,7 @@ add_executable(NeuralC main.c
         Utils/ActivationFunctions/ActivationFunctions.c
         Utils/ActivationFunctions/ActivationFunctions.h
         Entities/Layers/FeedForward/FeedForward.c
-        Entities/Layers/FeedForward/FeedForward.h)
+        Entities/Layers/FeedForward/FeedForward.h
+        Utils/Optimizers/Optimizers.c
+        Utils/Initializers/Initializers.c
+        Utils/Initializers/Initializers.h)
