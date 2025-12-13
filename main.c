@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "Utils/ActivationFunctions/ActivationFunctions.h"
+#include "Utils/ActivationFunctions/ScalarActivations/ScalarActivations.h"
 #include "Entities/Layers/FeedForward/FeedForward.h"
 #include "Utils/Initializers/Initializers.h"
 

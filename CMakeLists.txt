@@ -4,10 +4,15 @@ project(NeuralC C)
 set(CMAKE_C_STANDARD 11)
 
 add_executable(NeuralC main.c
-        Utils/ActivationFunctions/ActivationFunctions.c
-        Utils/ActivationFunctions/ActivationFunctions.h
         Entities/Layers/FeedForward/FeedForward.c
         Entities/Layers/FeedForward/FeedForward.h
         Utils/Optimizers/Optimizers.c
+        Utils/Optimizers/Optimizers.h
         Utils/Initializers/Initializers.c
-        Utils/Initializers/Initializers.h)
+        Utils/Initializers/Initializers.h
+        Utils/ActivationFunctions/ParamActivations/ParamActivations.c
+        Utils/ActivationFunctions/ParamActivations/ParamActivations.h
+        Utils/ActivationFunctions/ScalarActivations/ScalarActivations.c
+        Utils/ActivationFunctions/ScalarActivations/ScalarActivations.h
+        Utils/ActivationFunctions/VectorActivations/VectorActivations.c
+        Utils/ActivationFunctions/VectorActivations/VectorActivations.h)
