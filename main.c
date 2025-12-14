@@ -38,5 +38,6 @@ int main(void) {
     }
 
     free_feed_forward(&layer);
+    free_feed_forward(&layer2);
     return 0;
 }

@@ -1,5 +1,6 @@
 #include "FeedForward.h"
 #include "../../../Utils/Initializers/Initializers.h"
+#include "../../../Utils/Initializers/BiasInitializers/BiasInitializers.h"
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
@@ -45,7 +46,7 @@ void init_feed_forward(FeedForward* layer, const int inputs_amount, const int ne
         layer->outputs = NULL;
         return;
     }
-    apply_bias_initializer(bias_zero_init, layer->biases, neurons_amount, 0.0);
+    apply_bias_initializer(bias_zero_initializer, layer->biases, neurons_amount, 0.0);
 
     layer->outputs = (double*)malloc(sizeof(double) * (size_t)neurons_amount);
     if (layer->outputs == NULL) {

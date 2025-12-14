@@ -15,4 +15,12 @@ add_executable(NeuralC main.c
         Utils/ActivationFunctions/ScalarActivations/ScalarActivations.c
         Utils/ActivationFunctions/ScalarActivations/ScalarActivations.h
         Utils/ActivationFunctions/VectorActivations/VectorActivations.c
-        Utils/ActivationFunctions/VectorActivations/VectorActivations.h)
+        Utils/ActivationFunctions/VectorActivations/VectorActivations.h
+        Utils/Initializers/RandomInitializers/RandomInitializers.c
+        Utils/Initializers/RandomInitializers/RandomInitializers.h
+        Utils/Initializers/VarianceInitializers/VarianceInitializers.c
+        Utils/Initializers/VarianceInitializers/VarianceInitializers.h
+        Utils/Initializers/StructuresInitializers/StructuresInitializers.c
+        Utils/Initializers/StructuresInitializers/StructuresInitializers.h
+        Utils/Initializers/BiasInitializers/BiasInitializers.c
+        Utils/Initializers/BiasInitializers/BiasInitializers.h)
