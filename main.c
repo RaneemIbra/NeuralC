@@ -7,9 +7,10 @@ int main(void) {
     FeedForward layer, layer2;
     const int inputs = 3;
     const int neurons = 2;
+    const char* activation_name = "relu";
 
-    init_feed_forward(&layer, inputs, neurons, relu_activation, get_initializer(INIT_XAVIER_UNIFORM));
-    init_feed_forward(&layer2, inputs, neurons, relu_activation, get_initializer(INIT_HE_UNIFORM));
+    init_feed_forward(&layer, inputs, neurons, relu_activation, activation_name ,get_initializer(INIT_XAVIER_UNIFORM));
+    init_feed_forward(&layer2, inputs, neurons, relu_activation, activation_name ,get_initializer(INIT_HE_UNIFORM));
 
     const double in[] = {1.0, 2.0, -1.0};
     forward_pass(&layer, in);

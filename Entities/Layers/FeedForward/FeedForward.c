@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-void init_feed_forward(FeedForward* layer, const int inputs_amount, const int neurons_amount, double (*activation_function)(double), const WeightsInitializer weights_initializer) {
+void init_feed_forward(FeedForward* layer, const int inputs_amount, const int neurons_amount, double (*activation_function)(double), const char* activation_name ,const WeightsInitializer weights_initializer) {
     if (!layer) return;
 
     if (inputs_amount < 1 || neurons_amount < 1) {
@@ -38,7 +38,6 @@ void init_feed_forward(FeedForward* layer, const int inputs_amount, const int ne
         inputs_amount
     );
 
-
     layer->biases = (double*)malloc(sizeof(double) * (size_t)neurons_amount);
     if (layer->biases == NULL) {
         free(layer->weights);
@@ -46,7 +45,9 @@ void init_feed_forward(FeedForward* layer, const int inputs_amount, const int ne
         layer->outputs = NULL;
         return;
     }
-    apply_bias_initializer(bias_zero_initializer, layer->biases, neurons_amount, 0.0);
+    const BiasInitConfig bias_config = bias_init_from_activation(activation_name);
+    const BiasInitializer bias_initializer = get_bias_initializer(bias_config.type);
+    apply_bias_initializer(bias_initializer, layer->biases, neurons_amount, 0.0);
 
     layer->outputs = (double*)malloc(sizeof(double) * (size_t)neurons_amount);
     if (layer->outputs == NULL) {
