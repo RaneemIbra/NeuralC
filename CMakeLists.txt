@@ -23,4 +23,8 @@ add_executable(NeuralC main.c
         Utils/Initializers/StructuresInitializers/StructuresInitializers.c
         Utils/Initializers/StructuresInitializers/StructuresInitializers.h
         Utils/Initializers/BiasInitializers/BiasInitializers.c
-        Utils/Initializers/BiasInitializers/BiasInitializers.h)
+        Utils/Initializers/BiasInitializers/BiasInitializers.h
+        Utils/LossFunctions/LossFunctions.h
+        Utils/LossFunctions/RegressionsLosses.c
+        Utils/LossFunctions/ClassificationLosses.c
+        Utils/LossFunctions/ProbabilisticLosses.c)

@@ -2,6 +2,7 @@
 #include "Utils/ActivationFunctions/ScalarActivations/ScalarActivations.h"
 #include "Entities/Layers/FeedForward/FeedForward.h"
 #include "Utils/Initializers/Initializers.h"
+#include "Utils/LossFunctions/LossFunctions.h"
 
 int main(void) {
     FeedForward layer, layer2;
@@ -13,6 +14,7 @@ int main(void) {
     init_feed_forward(&layer2, inputs, neurons, relu_activation, activation_name ,get_initializer(INIT_HE_UNIFORM));
 
     const double in[] = {1.0, 2.0, -1.0};
+    const double target[] = {1.0, 0.0};
     forward_pass(&layer, in);
     forward_pass(&layer2, in);
 
@@ -37,6 +39,10 @@ int main(void) {
     for (int j = 0; j < layer2.neurons_amount; ++j) {
         printf("output[%d] = %f\n", j, layer2.outputs[j]);
     }
+
+    const double loss = mse_loss(layer.outputs, target, layer.neurons_amount);
+
+    printf("MSE loss: %f\n", loss);
 
     free_feed_forward(&layer);
     free_feed_forward(&layer2);
