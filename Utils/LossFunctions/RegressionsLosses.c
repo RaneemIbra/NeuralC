@@ -2,7 +2,7 @@
 
 #include "LossFunctions.h"
 
-double mse_loss(const double* predictions, const double* targets, const int length) {
+double mse_loss(const double *predictions, const double *targets, const int length) {
     if (!predictions || !targets) {
         return 0;
     }
@@ -14,7 +14,7 @@ double mse_loss(const double* predictions, const double* targets, const int leng
     return sum / length;
 }
 
-double mae_loss(const double* predictions, const double* targets, const int length) {
+double mae_loss(const double *predictions, const double *targets, const int length) {
     if (!predictions || !targets) {
         return 0;
     }
@@ -26,7 +26,7 @@ double mae_loss(const double* predictions, const double* targets, const int leng
     return sum / length;
 }
 
-double huber_loss(const double* predictions, const double* targets, const int length) {
+double huber_loss(const double *predictions, const double *targets, const int length) {
     if (!predictions || !targets) {
         return 0;
     }
@@ -35,15 +35,14 @@ double huber_loss(const double* predictions, const double* targets, const int le
         const double diff = fabs(predictions[i] - targets[i]);
         if (diff <= HUBER_LOSS_DELTA) {
             sum += 0.5 * diff * diff;
-        }
-        else {
+        } else {
             sum += HUBER_LOSS_DELTA * (diff - 0.5 * HUBER_LOSS_DELTA);
         }
     }
     return sum / length;
 }
 
-double log_cosh_loss(const double* predictions, const double* targets, const int length) {
+double log_cosh_loss(const double *predictions, const double *targets, const int length) {
     if (!predictions || !targets) {
         return 0;
     }

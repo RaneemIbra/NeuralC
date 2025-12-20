@@ -16,12 +16,12 @@ typedef enum {
     INIT_BLOCK_DIAGONAL
 } InitializerType;
 
-typedef void (*WeightsInitializer)(double* weights, int fan_in, int fan_out, int rows, int cols);
+typedef void (*WeightsInitializer)(double *weights, int fan_in, int fan_out, int rows, int cols);
 
 WeightsInitializer get_initializer(InitializerType type);
 
-void apply_initializer(WeightsInitializer init, double* weights, int fan_in, int fan_out, int rows, int cols);
+void apply_initializer(WeightsInitializer init, double *weights, int fan_in, int fan_out, int rows, int cols);
 
-double activation_gain(const char* activation_name);
+double activation_gain(const char *activation_name);
 
 #endif /* NEURALC_INITIALIZERS_H */

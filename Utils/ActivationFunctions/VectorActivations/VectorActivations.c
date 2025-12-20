@@ -1,7 +1,7 @@
 #include "VectorActivations.h"
 #include <math.h>
 
-void softmax(const double* input, double* output, const int vector_length) {
+void softmax(const double *input, double *output, const int vector_length) {
     double max = input[0];
     for (int i = 1; i < vector_length; i++)
         if (input[i] > max) max = input[i];
@@ -16,7 +16,7 @@ void softmax(const double* input, double* output, const int vector_length) {
         output[i] /= sum;
 }
 
-void log_softmax(const double* input, double* output, const int vector_length) {
+void log_softmax(const double *input, double *output, const int vector_length) {
     double max = input[0];
     for (int i = 1; i < vector_length; i++)
         if (input[i] > max) max = input[i];
@@ -31,7 +31,7 @@ void log_softmax(const double* input, double* output, const int vector_length) {
         output[i] = input[i] - max - log_sum;
 }
 
-void maxout(const double* input, double* output, const int input_size, const int group_size) {
+void maxout(const double *input, double *output, const int input_size, const int group_size) {
     const int out_size = input_size / group_size;
 
     for (int i = 0; i < out_size; i++) {

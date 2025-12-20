@@ -4,9 +4,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-void orthogonal_init(double* w, const int fan_in, const int fan_out, const int rows, const int cols, const double gain) {
+void orthogonal_init(double *w, const int fan_in, const int fan_out, const int rows, const int cols,
+                     const double gain) {
     const int size = rows * cols;
-    double* A = malloc(sizeof(double) * size);
+    double *A = malloc(sizeof(double) * size);
     if (!A) return;
 
     for (int i = 0; i < size; ++i)
@@ -38,7 +39,8 @@ void orthogonal_init(double* w, const int fan_in, const int fan_out, const int r
     free(A);
 }
 
-void sparse_init(double* w, const int fan_in, const int fan_out, const int rows, const int cols, const int nonezeros_per_row, const double std) {
+void sparse_init(double *w, const int fan_in, const int fan_out, const int rows, const int cols,
+                 const int nonezeros_per_row, const double std) {
     memset(w, 0, sizeof(double) * rows * cols);
 
     for (int r = 0; r < rows; ++r) {
@@ -49,23 +51,23 @@ void sparse_init(double* w, const int fan_in, const int fan_out, const int rows,
     }
 }
 
-void constant_init(double* w, const int rows, const int cols, const double value) {
+void constant_init(double *w, const int rows, const int cols, const double value) {
     for (int i = 0; i < rows * cols; ++i)
         w[i] = value;
 }
 
-void dirac_init(double* w, const int rows, const int cols, const double gain) {
+void dirac_init(double *w, const int rows, const int cols, const double gain) {
     memset(w, 0, sizeof(double) * rows * cols);
     const int k = rows < cols ? rows : cols;
     for (int i = 0; i < k; ++i)
         w[i * cols + i] = gain;
 }
 
-void delta_orthogonal_init(double* w, const int rows, const int cols, const double gain) {
+void delta_orthogonal_init(double *w, const int rows, const int cols, const double gain) {
     memset(w, 0, sizeof(double) * rows * cols);
 
     const int k = rows < cols ? rows : cols;
-    double* temp = malloc(sizeof(double) * rows * cols);
+    double *temp = malloc(sizeof(double) * rows * cols);
     if (!temp) return;
 
     for (int i = 0; i < rows * cols; ++i)
@@ -89,7 +91,7 @@ void delta_orthogonal_init(double* w, const int rows, const int cols, const doub
     free(temp);
 }
 
-void block_diagonal_init(double* w, const int rows, const int cols, const double gain) {
+void block_diagonal_init(double *w, const int rows, const int cols, const double gain) {
     memset(w, 0, sizeof(double) * rows * cols);
     const int k = rows < cols ? rows : cols;
     for (int i = 0; i < k; ++i)

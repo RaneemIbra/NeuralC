@@ -5,7 +5,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-void init_feed_forward(FeedForward* layer, const int inputs_amount, const int neurons_amount, double (*activation_function)(double), const char* activation_name ,const WeightsInitializer weights_initializer) {
+void init_feed_forward(FeedForward *layer, const int inputs_amount, const int neurons_amount,
+                       double (*activation_function)(double), const char *activation_name,
+                       const WeightsInitializer weights_initializer) {
     if (!layer) return;
 
     if (inputs_amount < 1 || neurons_amount < 1) {
@@ -22,8 +24,8 @@ void init_feed_forward(FeedForward* layer, const int inputs_amount, const int ne
     layer->neurons_amount = neurons_amount;
     layer->activation_function = activation_function;
 
-    const size_t weight_count = (size_t)neurons_amount * (size_t)inputs_amount;
-    layer->weights = (double*)malloc(weight_count * sizeof(double));
+    const size_t weight_count = (size_t) neurons_amount * (size_t) inputs_amount;
+    layer->weights = (double *) malloc(weight_count * sizeof(double));
     if (layer->weights == NULL) {
         layer->biases = NULL;
         layer->outputs = NULL;
@@ -38,7 +40,7 @@ void init_feed_forward(FeedForward* layer, const int inputs_amount, const int ne
         inputs_amount
     );
 
-    layer->biases = (double*)malloc(sizeof(double) * (size_t)neurons_amount);
+    layer->biases = (double *) malloc(sizeof(double) * (size_t) neurons_amount);
     if (layer->biases == NULL) {
         free(layer->weights);
         layer->weights = NULL;
@@ -49,7 +51,7 @@ void init_feed_forward(FeedForward* layer, const int inputs_amount, const int ne
     const BiasInitializer bias_initializer = get_bias_initializer(bias_config.type);
     apply_bias_initializer(bias_initializer, layer->biases, neurons_amount, 0.0);
 
-    layer->outputs = (double*)malloc(sizeof(double) * (size_t)neurons_amount);
+    layer->outputs = (double *) malloc(sizeof(double) * (size_t) neurons_amount);
     if (layer->outputs == NULL) {
         free(layer->weights);
         free(layer->biases);
@@ -57,10 +59,10 @@ void init_feed_forward(FeedForward* layer, const int inputs_amount, const int ne
         layer->biases = NULL;
         return;
     }
-    memset(layer->outputs, 0, sizeof(double) * (size_t)neurons_amount);
+    memset(layer->outputs, 0, sizeof(double) * (size_t) neurons_amount);
 }
 
-void free_feed_forward(FeedForward* layer) {
+void free_feed_forward(FeedForward *layer) {
     if (layer == NULL) return;
     if (layer->weights) {
         free(layer->weights);
@@ -79,7 +81,7 @@ void free_feed_forward(FeedForward* layer) {
     layer->activation_function = NULL;
 }
 
-void forward_pass(const FeedForward* layer, const double* inputs) {
+void forward_pass(const FeedForward *layer, const double *inputs) {
     if (layer == NULL || layer->weights == NULL || layer->outputs == NULL) return;
     if (inputs == NULL) return;
 
@@ -89,9 +91,9 @@ void forward_pass(const FeedForward* layer, const double* inputs) {
 
     for (int j = 0; j < n; ++j) {
         double sum = layer->biases[j];
-        const size_t base = (size_t)j * (size_t)in;
+        const size_t base = (size_t) j * (size_t) in;
         for (int i = 0; i < in; ++i) {
-            sum += layer->weights[base + (size_t)i] * inputs[i];
+            sum += layer->weights[base + (size_t) i] * inputs[i];
         }
         layer->outputs[j] = act != NULL ? act(sum) : sum;
     }

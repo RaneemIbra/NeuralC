@@ -2,22 +2,22 @@
 #include "../RandomInitializers/RandomInitializers.h"
 #include <string.h>
 
-void bias_zero_initializer(double* b, const int count, const double unused) {
-    (void)unused;
+void bias_zero_initializer(double *b, const int count, const double unused) {
+    (void) unused;
     memset(b, 0, sizeof(double) * count);
 }
 
-void bias_constant_initializer(double* b, const int count, const double value) {
+void bias_constant_initializer(double *b, const int count, const double value) {
     for (int i = 0; i < count; ++i)
         b[i] = value;
 }
 
-void bias_small_normal_initializer(double* b, const int count, const double std) {
+void bias_small_normal_initializer(double *b, const int count, const double std) {
     for (int i = 0; i < count; ++i)
         b[i] = random_normal_initializer(0.0, std);
 }
 
-void apply_bias_initializer(const BiasInitializer init, double* bias, const int count, const double param) {
+void apply_bias_initializer(const BiasInitializer init, double *bias, const int count, const double param) {
     if (!init)
         bias_zero_initializer(bias, count, 0.0);
     else
@@ -33,13 +33,12 @@ BiasInitializer get_bias_initializer(const BiasInitializerType type) {
     }
 }
 
-BiasInitConfig bias_init_from_activation(const char* activation_name) {
+BiasInitConfig bias_init_from_activation(const char *activation_name) {
     BiasInitConfig config;
     if (strcmp(activation_name, "relu") == 0 || strcmp(activation_name, "leaky_relu") == 0) {
         config.param = 0.1;
         config.type = BIAS_INIT_CONSTANT;
-    }
-    else {
+    } else {
         config.param = 0.1;
         config.type = BIAS_INIT_ZERO;
     }
