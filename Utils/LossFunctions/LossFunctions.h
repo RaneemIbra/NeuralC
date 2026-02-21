@@ -27,6 +27,10 @@ double hinge_loss(const double *predictions, const double *targets, int length);
 double squared_hinge_loss(const double *predictions, const double *targets, int length);
 
 // Probabilistic loss functions
-double categorical_CE_loss(const double *predictions, const double *targets, int length);
+double categorical_CE_loss(const double *predictions, const double *targets, int length, int classes);
+
+double sparse_categorical_CE_loss(const double *predictions, const double *targets, int length);
+
+double kullback_leibler_diverggence(const double *predictions, const double *targets, int length);
 
 #endif //NEURALC_LOSSFUNCTIONS_H
