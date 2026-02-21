@@ -18,6 +18,6 @@ void init_feed_forward(FeedForward *layer, int inputs_amount, int neurons_amount
 
 void free_feed_forward(FeedForward *layer);
 
-void forward_pass(const FeedForward *layer, const double *inputs);
+void forward_pass(const FeedForward *restrict layer, const double *restrict inputs);
 
 #endif //NEURALC_FEEDFORWARD_H
