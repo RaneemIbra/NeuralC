@@ -5,24 +5,24 @@
 #include "StructuresInitializers/StructuresInitializers.h"
 #include "VarianceInitializers/VarianceInitializers.h"
 
-static void orthogonal_wrapper(double *w, const int fi, const int fo, const int r, const int c) {
-    orthogonal_init(w, fi, fo, r, c, 1.0);
+static void orthogonal_wrapper(Tensor *w, const int fi, const int fo) {
+    orthogonal_init((double*)w->data, fi, fo, w->shape[0], w->shape[1], 1.0);
 }
 
-static void sparse_wrapper(double *w, const int fi, const int fo, const int r, const int c) {
-    sparse_init(w, fi, fo, r, c, (int) sqrt(fi), 0.01);
+static void sparse_wrapper(Tensor *w, const int fi, const int fo) {
+    sparse_init((double*)w->data, fi, fo, w->shape[0], w->shape[1], (int) sqrt(fi), 0.01);
 }
 
-static void constant_wrapper(double *w, const int fi, const int fo, const int r, const int c) {
-    constant_init(w, r, c, 0.0);
+static void constant_wrapper(Tensor *w, const int fi, const int fo) {
+    constant_init((double*)w->data, w->shape[0], w->shape[1], 0.0);
 }
 
-static void dirac_wrapper(double *w, const int fi, const int fo, const int r, const int c) {
-    dirac_init(w, r, c, 1.0);
+static void dirac_wrapper(Tensor *w, const int fi, const int fo) {
+    dirac_init((double*)w->data, w->shape[0], w->shape[1], 1.0);
 }
 
-static void block_diag_wrapper(double *w, const int fi, const int fo, const int r, const int c) {
-    block_diagonal_init(w, r, c, 1.0);
+static void block_diag_wrapper(Tensor *w, const int fi, const int fo) {
+    block_diagonal_init((double*)w->data, w->shape[0], w->shape[1], 1.0);
 }
 
 WeightsInitializer get_initializer(const InitializerType type) {
@@ -44,13 +44,12 @@ WeightsInitializer get_initializer(const InitializerType type) {
     }
 }
 
-void apply_initializer(const WeightsInitializer init, double *weights, const int fan_in, const int fan_out,
-                       const int rows, const int cols) {
+void apply_initializer(const WeightsInitializer init, Tensor *weights, const int fan_in, const int fan_out) {
     if (!init) {
-        memset(weights, 0, sizeof(double) * rows * cols);
+        memset(weights->data, 0, tensor_dtype_size(weights->dtype) * weights->size);
         return;
     }
-    init(weights, fan_in, fan_out, rows, cols);
+    init(weights, fan_in, fan_out);
 }
 
 double activation_gain(const char *activation_name) {

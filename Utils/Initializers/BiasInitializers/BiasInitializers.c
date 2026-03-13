@@ -2,26 +2,28 @@
 #include "../RandomInitializers/RandomInitializers.h"
 #include <string.h>
 
-void bias_zero_initializer(double *b, const int count, const double unused) {
+void bias_zero_initializer(Tensor *b, const double unused) {
     (void) unused;
-    memset(b, 0, sizeof(double) * count);
+    memset(b->data, 0, tensor_dtype_size(b->dtype) * b->size);
 }
 
-void bias_constant_initializer(double *b, const int count, const double value) {
-    for (int i = 0; i < count; ++i)
-        b[i] = value;
+void bias_constant_initializer(Tensor *b, const double value) {
+    double *data = (double*)b->data;
+    for (size_t i = 0; i < b->size; ++i)
+        data[i] = value;
 }
 
-void bias_small_normal_initializer(double *b, const int count, const double std) {
-    for (int i = 0; i < count; ++i)
-        b[i] = random_normal_initializer(0.0, std);
+void bias_small_normal_initializer(Tensor *b, const double std) {
+    double *data = (double*)b->data;
+    for (size_t i = 0; i < b->size; ++i)
+        data[i] = random_normal_initializer(0.0, std);
 }
 
-void apply_bias_initializer(const BiasInitializer init, double *bias, const int count, const double param) {
+void apply_bias_initializer(const BiasInitializer init, Tensor *bias, const double param) {
     if (!init)
-        bias_zero_initializer(bias, count, 0.0);
+        bias_zero_initializer(bias, 0.0);
     else
-        init(bias, count, param);
+        init(bias, param);
 }
 
 BiasInitializer get_bias_initializer(const BiasInitializerType type) {

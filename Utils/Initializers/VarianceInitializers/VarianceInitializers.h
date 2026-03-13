@@ -1,20 +1,22 @@
 #ifndef NEURALC_VARIANCEINITIALIZERS_H
 #define NEURALC_VARIANCEINITIALIZERS_H
 
-void xavier_uniform_initializer(double *w, int fan_in, int fan_out, int rows, int cols);
+#include "../../../Core/Tensor.h"
 
-void xavier_normal_initializer(double *w, int fan_in, int fan_out, int rows, int cols);
+void xavier_uniform_initializer(Tensor *w, int fan_in, int fan_out);
 
-void he_uniform_initializer(double *w, int fan_in, int fan_out, int rows, int cols);
+void xavier_normal_initializer(Tensor *w, int fan_in, int fan_out);
 
-void he_normal_initializer(double *w, int fan_in, int fan_out, int rows, int cols);
+void he_uniform_initializer(Tensor *w, int fan_in, int fan_out);
 
-void lecun_uniform_initializer(double *w, int fan_in, int fan_out, int rows, int cols);
+void he_normal_initializer(Tensor *w, int fan_in, int fan_out);
 
-void lecun_normal_initializer(double *w, int fan_in, int fan_out, int rows, int cols);
+void lecun_uniform_initializer(Tensor *w, int fan_in, int fan_out);
 
-void variance_scaling(double *w, int fan_in, int fan_out, int rows, int cols, double scale, int mode, int uniform);
+void lecun_normal_initializer(Tensor *w, int fan_in, int fan_out);
 
-void truncated_normal(double *w, int fan_in, int fan_out, int rows, int cols, double gain);
+void variance_scaling(Tensor *w, int fan_in, int fan_out, double scale, int mode, int uniform);
+
+void truncated_normal(Tensor *w, int fan_in, int fan_out, double gain);
 
 #endif //NEURALC_VARIANCEINITIALIZERS_H

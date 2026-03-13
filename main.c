@@ -3,48 +3,48 @@
 #include "Entities/Layers/FeedForward/FeedForward.h"
 #include "Utils/Initializers/Initializers.h"
 #include "Utils/LossFunctions/LossFunctions.h"
+#include "Core/Tensor.h"
 
 int main(void) {
-    FeedForward layer, layer2;
-    const int inputs = 3;
-    const int neurons = 2;
+    FeedForward layer;
+    const int inputs_dim = 3;
+    const int neurons_dim = 2;
     const char* activation_name = "relu";
 
-    init_feed_forward(&layer, inputs, neurons, relu_activation, activation_name ,get_initializer(INIT_XAVIER_UNIFORM));
-    init_feed_forward(&layer2, inputs, neurons, relu_activation, activation_name ,get_initializer(INIT_HE_UNIFORM));
+    init_feed_forward(&layer, inputs_dim, neurons_dim, relu_activation, activation_name, get_initializer(INIT_XAVIER_UNIFORM));
 
-    const double in[] = {1.0, 2.0, -1.0};
-    const double target[] = {1.0, 0.0};
-    forward_pass(&layer, in);
-    forward_pass(&layer2, in);
+    int in_shape[] = {inputs_dim, 1};
+    Tensor *input_tensor = tensor_create(DTYPE_FLOAT64, in_shape, 2, false);
+    double *in_data = (double*)input_tensor->data;
+    in_data[0] = 1.0; in_data[1] = 2.0; in_data[2] = -1.0;
 
-    printf("Weights initialized using Xavier:\n");
-    for (int j = 0; j < layer.neurons_amount; ++j) {
-        for (int i = 0; i < layer.inputs_amount; ++i) {
-            printf("W[%d][%d] = %f\n", j, i, layer.weights[j * inputs + i]);
-        }
-    }
-    printf("\nOutputs after forward pass:\n");
-    for (int j = 0; j < layer.neurons_amount; ++j) {
-        printf("output[%d] = %f\n", j, layer.outputs[j]);
-    }
+    int target_shape[] = {neurons_dim, 1};
+    Tensor *target_tensor = tensor_create(DTYPE_FLOAT64, target_shape, 2, false);
+    double *target_data = (double*)target_tensor->data;
+    target_data[0] = 1.0; target_data[1] = 0.0;
 
-    printf("Weights initialized using Xavier:\n");
-    for (int j = 0; j < layer2.neurons_amount; ++j) {
-        for (int i = 0; i < layer2.inputs_amount; ++i) {
-            printf("W[%d][%d] = %f\n", j, i, layer2.weights[j * inputs + i]);
-        }
-    }
-    printf("\nOutputs after forward pass:\n");
-    for (int j = 0; j < layer2.neurons_amount; ++j) {
-        printf("output[%d] = %f\n", j, layer2.outputs[j]);
-    }
+    Tensor *output = forward_pass(&layer, input_tensor);
 
-    const double loss = mse_loss(layer.outputs, target, layer.neurons_amount);
+    printf("--- FeedForward Layer (Tensor Edition) ---\n");
+    printf("Weights:\n");
+    tensor_print(layer.weights);
+    
+    printf("\nBiases:\n");
+    tensor_print(layer.biases);
 
-    printf("MSE loss: %f\n", loss);
+    printf("\nInput:\n");
+    tensor_print(input_tensor);
 
+    printf("\nOutput:\n");
+    tensor_print(output);
+
+    double loss = mse_loss(output, target_tensor);
+    printf("\nMSE Loss against target [1.0, 0.0]: %f\n", loss);
+
+    tensor_free(input_tensor);
+    tensor_free(target_tensor);
     free_feed_forward(&layer);
-    free_feed_forward(&layer2);
+
+    printf("\nPipeline test completed successfully!\n");
     return 0;
 }

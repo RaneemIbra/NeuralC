@@ -16,11 +16,13 @@ typedef enum {
     INIT_BLOCK_DIAGONAL
 } InitializerType;
 
-typedef void (*WeightsInitializer)(double *weights, int fan_in, int fan_out, int rows, int cols);
+#include "../../Core/Tensor.h"
+
+typedef void (*WeightsInitializer)(Tensor *weights, int fan_in, int fan_out);
 
 WeightsInitializer get_initializer(InitializerType type);
 
-void apply_initializer(WeightsInitializer init, double *weights, int fan_in, int fan_out, int rows, int cols);
+void apply_initializer(WeightsInitializer init, Tensor *weights, int fan_in, int fan_out);
 
 double activation_gain(const char *activation_name);
 
