@@ -4,6 +4,10 @@ project(NeuralC C)
 set(CMAKE_C_STANDARD 11)
 
 add_executable(NeuralC main.c
+        Core/Tensor.c
+        Core/Tensor.h
+        Core/TensorMath.c
+        Core/TensorMath.h
         Entities/Layers/FeedForward/FeedForward.c
         Entities/Layers/FeedForward/FeedForward.h
         Utils/Optimizers/Optimizers.c
