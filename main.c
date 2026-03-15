@@ -1,82 +1,55 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "Utils/ActivationFunctions/ScalarActivations/ScalarActivations.h"
+#include "Entities/Model/Model.h"
 #include "Entities/Layers/FeedForward/FeedForward.h"
+#include "Entities/Layers/ActivationLayer.h"
+#include "Utils/ActivationFunctions/ScalarActivations/ScalarActivations.h"
 #include "Utils/Initializers/Initializers.h"
-#include "Utils/LossFunctions/LossFunctions.h"
 #include "Core/Tensor.h"
-
-void example_single_layer() {
-    printf("=== Example 1: Single Layer Forward Pass ===\n");
-    FeedForward layer;
-    init_feed_forward(&layer, 3, 2, relu_activation, "relu", get_initializer(INIT_XAVIER_UNIFORM));
-
-    int in_shape[] = {3, 1};
-    Tensor *input = tensor_create(DTYPE_FLOAT64, in_shape, 2, false);
-    double *d = (double*)input->data;
-    d[0] = 0.5; d[1] = -0.2; d[2] = 0.1;
-
-    Tensor *output = forward_pass(&layer, input);
-    tensor_print(output);
-
-    tensor_free(input);
-    free_feed_forward(&layer);
-    printf("\n");
-}
-
-void example_multi_layer() {
-    printf("=== Example 2: Multi-Layer (Deep) Network ===\n");
-    // Layer 1: 3 -> 4
-    FeedForward l1;
-    init_feed_forward(&l1, 3, 4, relu_activation, "relu", get_initializer(INIT_HE_NORMAL));
-    
-    // Layer 2: 4 -> 2
-    FeedForward l2;
-    init_feed_forward(&l2, 4, 2, sigmoid_activation, "sigmoid", get_initializer(INIT_XAVIER_NORMAL));
-
-    // Input: Vector of 3
-    int in_shape[] = {3, 1};
-    Tensor *input = tensor_zeros(DTYPE_FLOAT64, in_shape, 2, false);
-    ((double*)input->data)[0] = 1.0; 
-
-    // Propagate: Input -> L1 -> L2
-    Tensor *hidden = forward_pass(&l1, input);
-    Tensor *final_output = forward_pass(&l2, hidden);
-
-    printf("Final Output (after 2 layers):\n");
-    tensor_print(final_output);
-
-    // Cleanup
-    tensor_free(input);
-    free_feed_forward(&l1);
-    free_feed_forward(&l2);
-    printf("\n");
-}
-
-void example_different_types() {
-    printf("=== Example 3: Handling Different Data Types ===\n");
-    // Note: Our current matmul focuses on FLOAT64, but the Tensor struct handles FLOAT32 too.
-    int shape[] = {2, 2};
-    Tensor *t_f32 = tensor_zeros(DTYPE_FLOAT32, shape, 2, false);
-    Tensor *t_f64 = tensor_zeros(DTYPE_FLOAT64, shape, 2, false);
-
-    printf("Float32 Tensor:\n");
-    tensor_print(t_f32);
-    printf("Float64 Tensor:\n");
-    tensor_print(t_f64);
-
-    tensor_free(t_f32);
-    tensor_free(t_f64);
-    printf("\n");
-}
+#include "Core/Common.h"
 
 int main(void) {
-    printf("NeuralC Tensor Usage Examples\n");
-    printf("-----------------------------\n\n");
+    printf("=== NeuralC: Professional Refined Engine ===\n");
 
-    example_single_layer();
-    example_multi_layer();
-    example_different_types();
+    // 1. Create a Sequential Model
+    Model *model = model_create();
 
+    // 2. Add Layers
+    model_add(model, dense_layer_create(3, 4, NULL, "dense1", get_initializer(INIT_HE_NORMAL)));
+    model_add(model, activation_layer_create(relu_activation, "relu1"));
+    model_add(model, dense_layer_create(4, 2, NULL, "dense2", get_initializer(INIT_XAVIER_NORMAL)));
+    model_add(model, activation_layer_create(sigmoid_activation, "sigmoid1"));
+
+    printf("Model initialized with %d layers.\n", model->count);
+
+    // 3. Create Input Tensor
+    int in_shape[] = {3, 1};
+    Tensor *input = tensor_create(DTYPE_FLOAT64, in_shape, 2, false);
+    if (!input) {
+        NC_REPORT_ERROR(NC_ERROR_OUT_OF_MEMORY);
+        return 1;
+    }
+    double *d = (double*)input->data;
+    d[0] = 1.0; d[1] = 0.5; d[2] = -1.0;
+
+    printf("\nInput Tensor:\n");
+    tensor_print(input);
+
+    // 4. Run Model Forward Pass with Error Handling
+    Tensor *output = NULL;
+    NcStatus status = model_forward(model, input, &output);
+
+    if (status == NC_SUCCESS) {
+        printf("\nFinal Model Output (Success):\n");
+        tensor_print(output);
+    } else {
+        printf("\nModel execution failed: %s\n", nc_status_to_string(status));
+    }
+
+    // 5. Cleanup
+    tensor_free(input);
+    model_free(model);
+
+    printf("\nRefinement test completed successfully!\n");
     return 0;
 }

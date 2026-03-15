@@ -8,6 +8,13 @@ add_executable(NeuralC main.c
         Core/Tensor.h
         Core/TensorMath.c
         Core/TensorMath.h
+        Core/Common.h
+        Core/Graph.c
+        Core/Graph.h
+        Entities/Model/Model.c
+        Entities/Model/Model.h
+        Entities/Layers/ActivationLayer.c
+        Entities/Layers/ActivationLayer.h
         Entities/Layers/FeedForward/FeedForward.c
         Entities/Layers/FeedForward/FeedForward.h
         Utils/Optimizers/Optimizers.c

@@ -2,9 +2,15 @@
 #define NEURALC_TENSORMATH_H
 
 #include "Tensor.h"
+#include "Common.h"
 
-Tensor* tensor_matmul(const Tensor *a, const Tensor *b);
+/**
+ * Professional Tensor Math API
+ * Returns NcStatus and uses restrict for performance.
+ */
 
-Tensor* tensor_add(const Tensor *a, const Tensor *b);
+NcStatus tensor_matmul(const Tensor *a, const Tensor *b, Tensor **result);
+
+NcStatus tensor_add(const Tensor *a, const Tensor *b, Tensor **result);
 
 #endif //NEURALC_TENSORMATH_H

@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>
+#include "Common.h"
 
 #define TENSOR_MAX_DIMS 5
 
@@ -35,9 +36,6 @@ void tensor_free(Tensor *tensor);
 size_t tensor_dtype_size(DataType dtype);
 
 Tensor* tensor_cast(const Tensor *tensor, DataType new_dtype);
-
-Tensor* tensor_add(const Tensor *a, const Tensor *b);
-Tensor* tensor_matmul(const Tensor *a, const Tensor *b);
 
 void tensor_print(const Tensor *tensor);
 
