@@ -60,7 +60,6 @@ double mish_activation(const double input) {
     return input * tanh(log(1.0 + exp(input)));
 }
 
-/* Derivatives for Backpropagation */
 
 double relu_derivative(const double input) {
     return input > 0 ? 1.0 : 0.0;

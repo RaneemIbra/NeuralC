@@ -4,8 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* --- Polymorphic Layer Wrapper --- */
-
 static NcStatus conv2d_layer_forward(Layer *self, int num_inputs, const Tensor **inputs, Tensor **output, NcGraph *graph) {
     if (!self || num_inputs != 1) return NC_ERROR_NULL_POINTER;
     return conv2d_forward((Conv2dLayer*)self->layer_data, inputs[0], output, graph);
@@ -108,7 +106,6 @@ NcStatus conv2d_forward(Conv2dLayer *layer, const Tensor *input, Tensor **output
         }
     }
 
-    // Reshape res to [out_channels, out_h, out_w]
     res->ndims = 3;
     res->shape[0] = layer->out_channels;
     res->shape[1] = out_h;
@@ -128,7 +125,6 @@ NcStatus conv2d_backward(Conv2dLayer *layer, const Tensor *grad_output, Tensor *
     int out_w = grad_output->shape[2];
     int spatial_size = out_h * out_w;
 
-    // 1. dL/db
     if (layer->biases->grad) {
         double *b_g = layer->biases->grad;
         const double *go = (const double*)grad_output->data;
@@ -139,7 +135,6 @@ NcStatus conv2d_backward(Conv2dLayer *layer, const Tensor *grad_output, Tensor *
         }
     }
 
-    // Temporarily treat grad_output as 2D [out_channels, spatial_size]
     int original_ndims = grad_output->ndims;
     int original_shape[TENSOR_MAX_DIMS];
     memcpy(original_shape, grad_output->shape, sizeof(int) * TENSOR_MAX_DIMS);
@@ -148,7 +143,6 @@ NcStatus conv2d_backward(Conv2dLayer *layer, const Tensor *grad_output, Tensor *
     ((Tensor*)grad_output)->shape[0] = layer->out_channels;
     ((Tensor*)grad_output)->shape[1] = spatial_size;
 
-    // 2. dL/dW = grad_output @ cols^T
     Tensor *cols = NULL;
     NcStatus status = nc_im2col(layer->last_input, C, H, W, layer->kernel_h, layer->kernel_w, 
                                 layer->stride_h, layer->stride_w, layer->pad_h, layer->pad_w, &cols);
@@ -168,7 +162,6 @@ NcStatus conv2d_backward(Conv2dLayer *layer, const Tensor *grad_output, Tensor *
     }
     tensor_free(dF);
 
-    // 3. dL/dX = col2im(W^T @ grad_output)
     Tensor *dCols = NULL;
     status = tensor_matmul_extended(layer->filters, true, grad_output, false, &dCols);
     if (status == NC_SUCCESS) {

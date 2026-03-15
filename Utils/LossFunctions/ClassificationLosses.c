@@ -29,7 +29,6 @@ NcStatus binary_CE_loss_derivative(const Tensor *predictions, const Tensor *targ
 
     for (size_t i = 0; i < N; i++) {
         double p = fmax(EPSILON, fmin(1.0 - EPSILON, P[i]));
-        // dL/dp = (1-t)/(1-p) - t/p
         G[i] = ((1.0 - T[i]) / (1.0 - p)) - (T[i] / p);
         G[i] /= (double)N;
     }

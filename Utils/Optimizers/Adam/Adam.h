@@ -6,14 +6,14 @@
 
 typedef struct {
     Tensor **params;
-    Tensor **m; // First moment
-    Tensor **v; // Second moment
+    Tensor **m;
+    Tensor **v;
     int count;
     double lr;
     double beta1;
     double beta2;
     double epsilon;
-    int t; // Timestep
+    int t;
 } AdamOptimizer;
 
 AdamOptimizer* optimizer_adam_create(Tensor **params, int count, double lr);

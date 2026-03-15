@@ -29,7 +29,6 @@ void model_add(Model *m, Layer *l) {
 NcStatus model_forward(Model *m, const Tensor *input, Tensor **output) {
     if (!m || !output) return NC_ERROR_NULL_POINTER;
     
-    // Clear previous session memory
     if (m->session_graph) nc_graph_free(m->session_graph);
     m->session_graph = nc_graph_create();
     if (!m->session_graph) return NC_ERROR_OUT_OF_MEMORY;
@@ -46,10 +45,6 @@ NcStatus model_forward(Model *m, const Tensor *input, Tensor **output) {
         }
         current_input = layer_output;
     }
-
-    // Ensure final output persists if untracked, but here we keep the graph alive
-    // so no need to untrack. Actually, we should untrack the final output if 
-    // it's not managed by the caller, but usually y_pred is used for loss.
     
     *output = current_input;
     return NC_SUCCESS;

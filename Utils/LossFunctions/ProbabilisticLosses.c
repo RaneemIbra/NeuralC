@@ -6,7 +6,6 @@
 double categorical_CE_loss(const Tensor *predictions, const Tensor *targets, int classes) {
     if (!predictions || !targets) return 0;
     
-    // Assume predictions is [N x classes] or [classes]
     const double *p_data = (const double*)predictions->data;
     const double *t_data = (const double*)targets->data;
     
@@ -15,7 +14,7 @@ double categorical_CE_loss(const Tensor *predictions, const Tensor *targets, int
     if (samples == 0) samples = 1;
 
     for (size_t i = 0; i < predictions->size; i++) {
-        if (t_data[i] > 0.5) { // One-hot target check
+        if (t_data[i] > 0.5) {
             double p = fmax(EPSILON, fmin(1.0 - EPSILON, p_data[i]));
             total_loss += -log(p);
         }
@@ -34,7 +33,6 @@ NcStatus categorical_CE_loss_derivative(const Tensor *predictions, const Tensor 
     const double *T = (const double*)targets->data;
     double *G = (double*)grad->data;
     
-    // dL/dp_i = -t_i / p_i
     for (size_t i = 0; i < predictions->size; i++) {
         double p = fmax(EPSILON, fmin(1.0 - EPSILON, P[i]));
         G[i] = -T[i] / p;
@@ -45,7 +43,6 @@ NcStatus categorical_CE_loss_derivative(const Tensor *predictions, const Tensor 
 }
 
 double sparse_categorical_CE_loss(const Tensor *predictions, const Tensor *targets) {
-    // To be implemented when we have a specialized target type or assume targets contains indices
     return 0;
 }
 

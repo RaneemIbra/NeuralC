@@ -14,10 +14,9 @@ typedef struct {
     int pad_h;
     int pad_w;
 
-    Tensor *filters; // [out_channels, in_channels, kernel_h, kernel_w]
-    Tensor *biases;  // [out_channels, 1]
+    Tensor *filters;
+    Tensor *biases;
     
-    // Intermediate buffers for backprop
     const Tensor *last_input;
 } Conv2dLayer;
 

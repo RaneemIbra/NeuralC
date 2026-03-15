@@ -28,7 +28,6 @@ NcStatus tensor_matmul_extended(const Tensor *a, bool trans_a, const Tensor *b, 
         const double *restrict B = (const double*)b->data;
         double *restrict C = (double*)res->data;
 
-        // Basic implementation with trans option (could be further optimized with tiling)
         for (int i = 0; i < a_rows; i++) {
             for (int k = 0; k < a_cols; k++) {
                 double val_a = trans_a ? A[k * a_rows + i] : A[i * a_cols + k];
@@ -100,7 +99,6 @@ NcStatus nc_im2col(const Tensor *input, int channels, int height, int width,
     int out_h = (height + 2 * pad_h - kernel_h) / stride_h + 1;
     int out_w = (width + 2 * pad_w - kernel_w) / stride_w + 1;
     
-    // Result shape: [channels * kernel_h * kernel_w, out_h * out_w]
     int res_shape[] = {channels * kernel_h * kernel_w, out_h * out_w};
     Tensor *res = tensor_zeros(DTYPE_FLOAT64, res_shape, 2, false);
     if (!res) return NC_ERROR_OUT_OF_MEMORY;

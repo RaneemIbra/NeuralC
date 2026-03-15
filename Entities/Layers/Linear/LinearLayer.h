@@ -11,15 +11,13 @@ typedef struct {
     Tensor *weights;
     Tensor *biases;
     Tensor *outputs;
-    const Tensor *last_input; // Tracked for backprop
+    const Tensor *last_input;
 
     double (*activation_function)(double);
 } LinearLayer;
 
-// Polymorphic Wrapper
 Layer* linear_layer_create(int inputs, int neurons, double (*activation)(double), const char* name, WeightsInitializer init);
 
-// Internal implementation details
 void init_linear_layer(LinearLayer *layer, int inputs_amount, int neurons_amount, double (*activation_function)(double),
                        const char *activation_name, WeightsInitializer weights_initializer);
 

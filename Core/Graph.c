@@ -33,11 +33,11 @@ NcStatus nc_graph_untrack(NcGraph *g, const Tensor *t) {
     if (!g || !t) return NC_ERROR_NULL_POINTER;
     for (int i = 0; i < g->count; i++) {
         if (g->tensors[i] == t) {
-            g->tensors[i] = NULL; // Mark as untracked
+            g->tensors[i] = NULL;
             return NC_SUCCESS;
         }
     }
-    return NC_SUCCESS; // Not found is fine
+    return NC_SUCCESS;
 }
 
 void nc_graph_free(NcGraph *g) {

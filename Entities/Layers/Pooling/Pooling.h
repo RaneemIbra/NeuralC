@@ -16,9 +16,8 @@ typedef struct {
     int stride_h;
     int stride_w;
     
-    // For backprop
     const Tensor *last_input;
-    Tensor *max_indices; // Only for POOL_MAX
+    Tensor *max_indices;
 } PoolingLayer;
 
 Layer* pooling_layer_create(PoolingType type, int k_h, int k_w, int s_h, int s_w, const char* name);

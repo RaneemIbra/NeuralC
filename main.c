@@ -17,7 +17,6 @@
 #include "Core/Common.h"
 #include "Core/Graph.h"
 
-// Helper to run a training step
 void perform_step(Model *model, void *optimizer, bool is_adam, Tensor *x, Tensor *y_true) {
     Tensor *y_pred = NULL;
     model_forward(model, x, &y_pred);
@@ -116,10 +115,9 @@ void run_deep_ffn_demo() {
 void run_basic_cnn_demo() {
     printf("\n--- Demo 4: Basic CNN (Conv -> Pool -> FC) ---\n");
     Model *model = model_create();
-    // Input [1, 14, 14]
     model_add(model, conv2d_layer_create(1, 4, 3, 3, 1, 1, 1, 1, "conv1", get_initializer(INIT_XAVIER_UNIFORM)));
     model_add(model, activation_layer_create(relu_activation, relu_derivative, "relu1"));
-    model_add(model, pooling_layer_create(POOL_MAX, 2, 2, 2, 2, "pool1")); // Output [4, 7, 7]
+    model_add(model, pooling_layer_create(POOL_MAX, 2, 2, 2, 2, "pool1"));
     model_add(model, flatten_layer_create("flatten"));
     model_add(model, linear_layer_create(4*7*7, 10, linear_activation, "fc1", get_initializer(INIT_XAVIER_NORMAL)));
 
@@ -142,7 +140,6 @@ void run_basic_cnn_demo() {
 void run_advanced_cnn_demo() {
     printf("\n--- Demo 5: Advanced CNN (Dropout + GAP) ---\n");
     Model *model = model_create();
-    // Input [3, 32, 32]
     model_add(model, conv2d_layer_create(3, 8, 3, 3, 1, 1, 1, 1, "conv1", get_initializer(INIT_HE_NORMAL)));
     model_add(model, activation_layer_create(relu_activation, relu_derivative, "relu1"));
     model_add(model, dropout_layer_create(0.2, "drop1"));

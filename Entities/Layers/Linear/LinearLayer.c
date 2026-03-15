@@ -7,8 +7,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* --- Polymorphic Layer Interface Implementation --- */
-
 static NcStatus linear_layer_forward(Layer *self, int num_inputs, const Tensor **inputs, Tensor **output, NcGraph *graph) {
     if (!self || num_inputs != 1 || !inputs[0] || !output) return NC_ERROR_NULL_POINTER;
     return linear_forward_pass((LinearLayer*)self->layer_data, inputs[0], output, graph);
@@ -67,8 +65,6 @@ Layer* linear_layer_create(int inputs, int neurons, double (*activation)(double)
 
     return l;
 }
-
-/* --- Internal Implementation --- */
 
 void init_linear_layer(LinearLayer *layer, const int inputs_amount, const int neurons_amount,
                        double (*activation_function)(double), const char *activation_name,
@@ -140,14 +136,12 @@ NcStatus linear_forward_pass(LinearLayer *layer, const Tensor *inputs, Tensor **
 NcStatus linear_backward_pass(LinearLayer *layer, const Tensor *grad_output, Tensor **grad_input, NcGraph *graph) {
     if (!layer || !grad_output || !grad_input || !layer->last_input) return NC_ERROR_NULL_POINTER;
 
-    // 1. dL/db
     if (layer->biases->grad) {
         for (size_t i = 0; i < layer->biases->size; i++) {
             layer->biases->grad[i] += ((double*)grad_output->data)[i];
         }
     }
 
-    // 2. dL/dW
     Tensor *dW = NULL;
     NcStatus status = tensor_matmul_extended(grad_output, false, layer->last_input, true, &dW);
     if (status != NC_SUCCESS) return status;
@@ -159,7 +153,6 @@ NcStatus linear_backward_pass(LinearLayer *layer, const Tensor *grad_output, Ten
     }
     tensor_free(dW);
 
-    // 3. dL/dX
     status = tensor_matmul_extended(layer->weights, true, grad_output, false, grad_input);
     if (status != NC_SUCCESS) return status;
     if (graph) nc_graph_track(graph, *grad_input);

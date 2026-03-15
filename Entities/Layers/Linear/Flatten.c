@@ -61,7 +61,6 @@ NcStatus flatten_forward(FlattenLayer *layer, const Tensor *input, Tensor **outp
 NcStatus flatten_backward(FlattenLayer *layer, const Tensor *grad_output, Tensor **grad_input, NcGraph *graph) {
     if (!layer || !grad_output || !grad_input) return NC_ERROR_NULL_POINTER;
 
-    // Reshape back to original input shape
     Tensor *dX = tensor_create(DTYPE_FLOAT64, layer->input_shape, layer->input_ndims, false);
     if (!dX) return NC_ERROR_OUT_OF_MEMORY;
     if (graph) nc_graph_track(graph, dX);

@@ -3,8 +3,6 @@
 #include <string.h>
 #include <float.h>
 
-/* --- Polymorphic Layer Wrapper --- */
-
 static NcStatus pooling_layer_forward(Layer *self, int num_inputs, const Tensor **inputs, Tensor **output, NcGraph *graph) {
     if (!self || num_inputs != 1) return NC_ERROR_NULL_POINTER;
     return pooling_forward((PoolingLayer*)self->layer_data, inputs[0], output, graph);

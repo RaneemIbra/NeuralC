@@ -25,6 +25,7 @@ add_executable(NeuralC main.c
         Entities/Layers/Convolution/Conv2d.h
         Entities/Layers/Pooling/Pooling.c
         Entities/Layers/Pooling/Pooling.h
+        Entities/Layers/Layer.h
         Utils/Optimizers/SGD/SGD.c
         Utils/Optimizers/SGD/SGD.h
         Utils/Optimizers/Adam/Adam.c

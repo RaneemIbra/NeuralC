@@ -3,9 +3,6 @@
 
 #include <stdio.h>
 
-/**
- * Global Status Codes for Error Handling
- */
 typedef enum {
     NC_SUCCESS = 0,
     NC_ERROR_OUT_OF_MEMORY,
@@ -16,9 +13,6 @@ typedef enum {
     NC_ERROR_INTERNAL
 } NcStatus;
 
-/**
- * Simple Logger / Error Reporter
- */
 static inline const char* nc_status_to_string(NcStatus status) {
     switch (status) {
         case NC_SUCCESS:            return "Success";
