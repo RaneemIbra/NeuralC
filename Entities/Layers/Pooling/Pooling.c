@@ -27,7 +27,7 @@ Layer* pooling_layer_create(PoolingType type, int k_h, int k_w, int s_h, int s_w
     Layer *l = (Layer*)malloc(sizeof(Layer));
     if (!l) return NULL;
 
-    l->name = strdup(name ? name : (type == POOL_MAX ? "max_pool" : "avg_pool"));
+    l->name = strdup(name ? name : (type == POOL_MAX ? "max_pool" : (type == POOL_AVERAGE ? "avg_pool" : "gap")));
     l->train_mode = true;
 
     PoolingLayer *pl = (PoolingLayer*)malloc(sizeof(PoolingLayer));
@@ -46,8 +46,14 @@ Layer* pooling_layer_create(PoolingType type, int k_h, int k_w, int s_h, int s_w
     l->get_parameters = NULL;
     l->reset_state = NULL;
     l->toggle_train = NULL;
-    *output = res;
-    return NC_SUCCESS;
+    l->save = NULL;
+
+    return l;
+}
+
+void free_pooling_layer(PoolingLayer *layer) {
+    if (!layer) return;
+    if (layer->max_indices) tensor_free(layer->max_indices);
 }
 
 Layer* global_average_pooling_layer_create(const char* name) {
@@ -74,8 +80,6 @@ NcStatus pooling_forward(PoolingLayer *layer, const Tensor *input, Tensor **outp
     Tensor *res = tensor_zeros(DTYPE_FLOAT64, out_shape, 3, input->requires_grad);
     if (!res) return NC_ERROR_OUT_OF_MEMORY;
     if (graph) nc_graph_track(graph, res);
-    
-    // ... rest of logic updated to handle GAP ...
 
     if (layer->type == POOL_MAX) {
         if (layer->max_indices) tensor_free(layer->max_indices);
@@ -86,6 +90,15 @@ NcStatus pooling_forward(PoolingLayer *layer, const Tensor *input, Tensor **outp
     const double *in_data = (const double*)input->data;
 
     for (int c = 0; c < C; c++) {
+        if (layer->type == POOL_GLOBAL_AVERAGE) {
+            double sum = 0;
+            for (int i = 0; i < H * W; i++) {
+                sum += in_data[c * H * W + i];
+            }
+            out_data[c] = sum / (H * W);
+            continue;
+        }
+
         for (int oh = 0; oh < out_h; oh++) {
             for (int ow = 0; ow < out_w; ow++) {
                 int h_start = oh * layer->stride_h;
@@ -143,11 +156,10 @@ NcStatus pooling_backward(PoolingLayer *layer, const Tensor *grad_output, Tensor
         for (size_t i = 0; i < grad_output->size; i++) {
             dx_data[indices[i]] += go_data[i];
         }
-    } else {
+    } else if (layer->type == POOL_AVERAGE) {
         int out_h = grad_output->shape[1];
         int out_w = grad_output->shape[2];
         double scale = 1.0 / (layer->kernel_h * layer->kernel_w);
-
         for (int c = 0; c < C; c++) {
             for (int oh = 0; oh < out_h; oh++) {
                 for (int ow = 0; ow < out_w; ow++) {
@@ -160,6 +172,14 @@ NcStatus pooling_backward(PoolingLayer *layer, const Tensor *grad_output, Tensor
                         }
                     }
                 }
+            }
+        }
+    } else if (layer->type == POOL_GLOBAL_AVERAGE) {
+        double scale = 1.0 / (H * W);
+        for (int c = 0; c < C; c++) {
+            double grad = go_data[c] * scale;
+            for (int i = 0; i < H * W; i++) {
+                dx_data[c * H * W + i] += grad;
             }
         }
     }

@@ -36,7 +36,7 @@ NcStatus optimizer_adam_step(AdamOptimizer *opt) {
 
     for (int i = 0; i < opt->count; i++) {
         Tensor *p = opt->params[i];
-        if (!p->grad) continue;
+        if (!p || !p->grad) continue;
 
         double *restrict data = (double*)p->data;
         double *restrict grad = (double*)p->grad;

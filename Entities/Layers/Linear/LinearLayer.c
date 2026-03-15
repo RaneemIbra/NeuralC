@@ -103,7 +103,6 @@ void free_linear_layer(LinearLayer *layer) {
     if (layer == NULL) return;
     if (layer->weights) tensor_free(layer->weights);
     if (layer->biases) tensor_free(layer->biases);
-    if (layer->outputs) tensor_free(layer->outputs);
 }
 
 NcStatus linear_forward_pass(LinearLayer *layer, const Tensor *inputs, Tensor **output, NcGraph *graph) {
@@ -121,7 +120,7 @@ NcStatus linear_forward_pass(LinearLayer *layer, const Tensor *inputs, Tensor **
     if (status != NC_SUCCESS) return status;
     if (graph) nc_graph_track(graph, z);
 
-    const double (*act)(double) = layer->activation_function;
+    double (*act)(double) = layer->activation_function;
     if (act) {
         Tensor *act_out = tensor_create(z->dtype, z->shape, z->ndims, z->requires_grad);
         if (!act_out) return NC_ERROR_OUT_OF_MEMORY;
@@ -143,20 +142,15 @@ NcStatus linear_backward_pass(LinearLayer *layer, const Tensor *grad_output, Ten
 
     // 1. dL/db
     if (layer->biases->grad) {
-        printf("    linear_backward: calculating dL/db...\n");
         for (size_t i = 0; i < layer->biases->size; i++) {
             layer->biases->grad[i] += ((double*)grad_output->data)[i];
         }
     }
 
     // 2. dL/dW
-    printf("    linear_backward: calculating dL/dW...\n");
     Tensor *dW = NULL;
     NcStatus status = tensor_matmul_extended(grad_output, false, layer->last_input, true, &dW);
-    if (status != NC_SUCCESS) {
-        printf("    linear_backward: dL/dW matmul failed with %d\n", status);
-        return status;
-    }
+    if (status != NC_SUCCESS) return status;
 
     if (layer->weights->grad) {
         double *restrict W_g = layer->weights->grad;
@@ -166,14 +160,9 @@ NcStatus linear_backward_pass(LinearLayer *layer, const Tensor *grad_output, Ten
     tensor_free(dW);
 
     // 3. dL/dX
-    printf("    linear_backward: calculating dL/dX...\n");
     status = tensor_matmul_extended(layer->weights, true, grad_output, false, grad_input);
-    if (status != NC_SUCCESS) {
-        printf("    linear_backward: dL/dX matmul failed with %d\n", status);
-        return status;
-    }
+    if (status != NC_SUCCESS) return status;
     if (graph) nc_graph_track(graph, *grad_input);
 
-    printf("    linear_backward: completed.\n");
     return NC_SUCCESS;
 }
