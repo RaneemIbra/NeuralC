@@ -62,3 +62,24 @@ double log_cosh_loss(const Tensor *predictions, const Tensor *targets) {
     }
     return sum / predictions->size;
 }
+
+NcStatus mse_loss_derivative(const Tensor *predictions, const Tensor *targets, Tensor **grad_output) {
+    if (!predictions || !targets || !grad_output) return NC_ERROR_NULL_POINTER;
+    if (predictions->size != targets->size) return NC_ERROR_SHAPE_MISMATCH;
+
+    Tensor *grad = tensor_create(predictions->dtype, predictions->shape, predictions->ndims, false);
+    if (!grad) return NC_ERROR_OUT_OF_MEMORY;
+
+    const double *restrict P = (const double*)predictions->data;
+    const double *restrict T = (const double*)targets->data;
+    double *restrict G = (double*)grad->data;
+    const size_t N = predictions->size;
+    const double factor = 2.0 / (double)N;
+
+    for (size_t i = 0; i < N; i++) {
+        G[i] = factor * (P[i] - T[i]);
+    }
+
+    *grad_output = grad;
+    return NC_SUCCESS;
+}

@@ -15,7 +15,8 @@ typedef struct Layer {
 
     // forward now takes an optional NcGraph for intermediate memory management
     NcStatus (*forward)(struct Layer *self, int num_inputs, const Tensor **inputs, Tensor **output, NcGraph *graph);
-    NcStatus (*backward)(struct Layer *self, const Tensor *grad_output);
+    // backward pass: receives grad_output, returns grad_input (optional NcGraph for intermediates)
+    NcStatus (*backward)(struct Layer *self, const Tensor *grad_output, Tensor **grad_input, NcGraph *graph);
     
     void (*reset_state)(struct Layer *self);
     void (*toggle_train)(struct Layer *self, bool train);

@@ -13,6 +13,7 @@ typedef struct {
     Tensor *weights;
     Tensor *biases;
     Tensor *outputs;
+    const Tensor *last_input; // Tracked for backprop
 
     double (*activation_function)(double);
 } FeedForward;
@@ -27,5 +28,6 @@ void init_feed_forward(FeedForward *layer, int inputs_amount, int neurons_amount
 void free_feed_forward(FeedForward *layer);
 
 NcStatus forward_pass(FeedForward *layer, const Tensor *inputs, Tensor **output, NcGraph *graph);
+NcStatus backward_pass(FeedForward *layer, const Tensor *grad_output, Tensor **grad_input, NcGraph *graph);
 
 #endif //NEURALC_FEEDFORWARD_H

@@ -1,4 +1,5 @@
 #include <math.h>
+#include <stdlib.h>
 #include "LossFunctions.h"
 
 double binary_CE_loss(const Tensor *predictions, const Tensor *targets) {
@@ -13,6 +14,28 @@ double binary_CE_loss(const Tensor *predictions, const Tensor *targets) {
         sum += t_data[i] * log(p) + (1.0 - t_data[i]) * log(1.0 - p);
     }
     return -(sum / predictions->size);
+}
+
+NcStatus binary_CE_loss_derivative(const Tensor *predictions, const Tensor *targets, Tensor **grad_output) {
+    if (!predictions || !targets || !grad_output) return NC_ERROR_NULL_POINTER;
+    
+    Tensor *grad = tensor_create(predictions->dtype, predictions->shape, predictions->ndims, false);
+    if (!grad) return NC_ERROR_OUT_OF_MEMORY;
+
+    const double *P = (const double*)predictions->data;
+    const double *T = (const double*)targets->data;
+    double *G = (double*)grad->data;
+    const size_t N = predictions->size;
+
+    for (size_t i = 0; i < N; i++) {
+        double p = fmax(EPSILON, fmin(1.0 - EPSILON, P[i]));
+        // dL/dp = (1-t)/(1-p) - t/p
+        G[i] = ((1.0 - T[i]) / (1.0 - p)) - (T[i] / p);
+        G[i] /= (double)N;
+    }
+
+    *grad_output = grad;
+    return NC_SUCCESS;
 }
 
 double hinge_loss(const Tensor *predictions, const Tensor *targets) {

@@ -59,3 +59,27 @@ double hard_swish_activation(const double input) {
 double mish_activation(const double input) {
     return input * tanh(log(1.0 + exp(input)));
 }
+
+/* Derivatives for Backpropagation */
+
+double relu_derivative(const double input) {
+    return input > 0 ? 1.0 : 0.0;
+}
+
+double leaky_relu_derivative(const double input) {
+    return input > 0 ? 1.0 : 0.01;
+}
+
+double sigmoid_derivative(const double input) {
+    double s = sigmoid_activation(input);
+    return s * (1.0 - s);
+}
+
+double tanh_derivative(const double input) {
+    double t = tanh_activation(input);
+    return 1.0 - (t * t);
+}
+
+double linear_derivative(const double input) {
+    return 1.0;
+}

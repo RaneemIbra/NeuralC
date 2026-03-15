@@ -3,6 +3,6 @@
 
 #include "Layer.h"
 
-Layer* activation_layer_create(double (*activation)(double), const char* name);
+Layer* activation_layer_create(double (*activation)(double), double (*derivative)(double), const char* name);
 
 #endif //NEURALC_ACTIVATIONLAYER_H

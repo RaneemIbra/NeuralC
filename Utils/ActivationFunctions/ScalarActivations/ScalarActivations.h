@@ -25,4 +25,11 @@ double hard_swish_activation(double input);
 
 double mish_activation(double input);
 
+/* Derivatives for Backpropagation */
+double relu_derivative(double input);
+double leaky_relu_derivative(double input);
+double sigmoid_derivative(double input);
+double tanh_derivative(double input);
+double linear_derivative(double input);
+
 #endif //NEURALC_SCALARACTIVATIONS_H

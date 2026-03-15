@@ -13,6 +13,7 @@ typedef double (*LossFunction)(
 
 // Regression loss functions
 double mse_loss(const Tensor *predictions, const Tensor *targets);
+NcStatus mse_loss_derivative(const Tensor *predictions, const Tensor *targets, Tensor **grad_output);
 
 double mae_loss(const Tensor *predictions, const Tensor *targets);
 
@@ -22,6 +23,7 @@ double log_cosh_loss(const Tensor *predictions, const Tensor *targets);
 
 // Classification loss functions
 double binary_CE_loss(const Tensor *predictions, const Tensor *targets);
+NcStatus binary_CE_loss_derivative(const Tensor *predictions, const Tensor *targets, Tensor **grad_output);
 
 double hinge_loss(const Tensor *predictions, const Tensor *targets);
 
@@ -29,6 +31,7 @@ double squared_hinge_loss(const Tensor *predictions, const Tensor *targets);
 
 // Probabilistic loss functions
 double categorical_CE_loss(const Tensor *predictions, const Tensor *targets, int classes);
+NcStatus categorical_CE_loss_derivative(const Tensor *predictions, const Tensor *targets, Tensor **grad_output);
 
 double sparse_categorical_CE_loss(const Tensor *predictions, const Tensor *targets);
 

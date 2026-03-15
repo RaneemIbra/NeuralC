@@ -13,6 +13,22 @@ static NcStatus dense_layer_forward(Layer *self, int num_inputs, const Tensor **
     return forward_pass((FeedForward*)self->layer_data, inputs[0], output, graph);
 }
 
+static NcStatus dense_layer_backward(Layer *self, const Tensor *grad_output, Tensor **grad_input, NcGraph *graph) {
+    if (!self || !grad_output || !grad_input) return NC_ERROR_NULL_POINTER;
+    return backward_pass((FeedForward*)self->layer_data, grad_output, grad_input, graph);
+}
+
+static Tensor** dense_layer_get_params(Layer *self, int *num_params) {
+    if (!self || !num_params) return NULL;
+    FeedForward *ff = (FeedForward*)self->layer_data;
+    
+    Tensor **params = (Tensor**)malloc(2 * sizeof(Tensor*));
+    params[0] = ff->weights;
+    params[1] = ff->biases;
+    *num_params = 2;
+    return params;
+}
+
 static void dense_layer_free(Layer *self) {
     if (!self) return;
     if (self->layer_data) {
@@ -41,11 +57,11 @@ Layer* dense_layer_create(int inputs, int neurons, double (*activation)(double),
     l->layer_data = ff;
 
     l->forward = dense_layer_forward;
+    l->backward = dense_layer_backward;
+    l->get_parameters = dense_layer_get_params;
     l->free = dense_layer_free;
-    l->backward = NULL; 
     l->reset_state = NULL; 
     l->toggle_train = NULL;
-    l->get_parameters = NULL;
     l->save = NULL;
 
     return l;
@@ -61,6 +77,7 @@ void init_feed_forward(FeedForward *layer, const int inputs_amount, const int ne
     layer->inputs_amount = inputs_amount;
     layer->neurons_amount = neurons_amount;
     layer->activation_function = activation_function;
+    layer->last_input = NULL;
 
     int weight_shape[] = {neurons_amount, inputs_amount};
     layer->weights = tensor_zeros(DTYPE_FLOAT64, weight_shape, 2, true);
@@ -78,7 +95,7 @@ void init_feed_forward(FeedForward *layer, const int inputs_amount, const int ne
         apply_bias_initializer(bias_init_func, layer->biases, bias_config.param);
     }
 
-    layer->outputs = NULL; // Outputs are now ephemeral or graph-managed
+    layer->outputs = NULL;
 }
 
 void free_feed_forward(FeedForward *layer) {
@@ -90,24 +107,21 @@ void free_feed_forward(FeedForward *layer) {
 
 NcStatus forward_pass(FeedForward *layer, const Tensor *inputs, Tensor **output, NcGraph *graph) {
     if (!layer || !layer->weights || !inputs || !output) return NC_ERROR_NULL_POINTER;
+    layer->last_input = inputs;
 
     Tensor *product = NULL;
     NcStatus status = tensor_matmul(layer->weights, inputs, &product);
     if (status != NC_SUCCESS) return status;
-    if (graph) nc_graph_track(graph, product); // Track the intermediate product
+    if (graph) nc_graph_track(graph, product);
 
     Tensor *z = NULL;
     status = tensor_add(product, layer->biases, &z);
-    if (!graph) tensor_free(product); // Manual cleanup if no graph
-    
+    if (!graph) tensor_free(product);
     if (status != NC_SUCCESS) return status;
-    if (graph) nc_graph_track(graph, z); // Track the pre-activation Z
+    if (graph) nc_graph_track(graph, z);
 
     const double (*act)(double) = layer->activation_function;
     if (act) {
-        // Professional trick: If we have a graph, we can afford to create a new tensor for activations
-        // or just apply it in-place to Z if we don't need Z anymore.
-        // For Autograd, we often need Z, so let's create a new one.
         Tensor *act_out = tensor_create(z->dtype, z->shape, z->ndims, z->requires_grad);
         if (!act_out) return NC_ERROR_OUT_OF_MEMORY;
         if (graph) nc_graph_track(graph, act_out);
@@ -118,9 +132,37 @@ NcStatus forward_pass(FeedForward *layer, const Tensor *inputs, Tensor **output,
         z = act_out;
     }
 
-    // layer->outputs is historically used for persistence, but with Graph it's cleaner
     layer->outputs = z; 
     *output = z;
+    return NC_SUCCESS;
+}
+
+NcStatus backward_pass(FeedForward *layer, const Tensor *grad_output, Tensor **grad_input, NcGraph *graph) {
+    if (!layer || !grad_output || !grad_input || !layer->last_input) return NC_ERROR_NULL_POINTER;
+
+    // 1. dL/db
+    if (layer->biases->grad) {
+        for (size_t i = 0; i < layer->biases->size; i++) {
+            layer->biases->grad[i] += ((double*)grad_output->data)[i];
+        }
+    }
+
+    // 2. dL/dW = grad_output @ (last_input)^T
+    Tensor *dW = NULL;
+    NcStatus status = tensor_matmul_extended(grad_output, false, layer->last_input, true, &dW);
+    if (status != NC_SUCCESS) return status;
+
+    if (layer->weights->grad) {
+        double *restrict W_g = layer->weights->grad;
+        double *restrict dW_d = (double*)dW->data;
+        for (size_t i = 0; i < dW->size; i++) W_g[i] += dW_d[i];
+    }
+    tensor_free(dW);
+
+    // 3. dL/dX = W^T @ grad_output
+    status = tensor_matmul_extended(layer->weights, true, grad_output, false, grad_input);
+    if (status != NC_SUCCESS) return status;
+    if (graph) nc_graph_track(graph, *grad_input);
 
     return NC_SUCCESS;
 }

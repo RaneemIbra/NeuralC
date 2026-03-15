@@ -43,3 +43,32 @@ void maxout(const double *input, double *output, const int input_size, const int
         output[i] = max;
     }
 }
+
+NcStatus softmax_derivative(const Tensor *input, Tensor **jacobian) {
+    if (!input || !jacobian) return NC_ERROR_NULL_POINTER;
+    
+    // For a vector of length N, the Jacobian is NxN
+    int N = input->size;
+    int res_shape[] = {N, N};
+    Tensor *J = tensor_zeros(DTYPE_FLOAT64, res_shape, 2, false);
+    if (!J) return NC_ERROR_OUT_OF_MEMORY;
+
+    // First compute softmax
+    double *s = (double*)malloc(sizeof(double) * N);
+    softmax((const double*)input->data, s, N);
+
+    double *data = (double*)J->data;
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+            if (i == j) {
+                data[i * N + j] = s[i] * (1.0 - s[i]);
+            } else {
+                data[i * N + j] = -s[i] * s[j];
+            }
+        }
+    }
+
+    free(s);
+    *jacobian = J;
+    return NC_SUCCESS;
+}
