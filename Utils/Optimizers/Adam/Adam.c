@@ -1,63 +1,7 @@
-#include "Optimizers.h"
+#include "Adam.h"
 #include <stdlib.h>
-
-Optimizer* optimizer_sgd_create(Tensor **params, int count, double lr) {
-    Optimizer *opt = (Optimizer*)malloc(sizeof(Optimizer));
-    if (!opt) return NULL;
-    
-    opt->params = (Tensor**)malloc(sizeof(Tensor*) * count);
-    if (!opt->params) {
-        free(opt);
-        return NULL;
-    }
-    
-    for (int i = 0; i < count; i++) {
-        opt->params[i] = params[i];
-    }
-    opt->count = count;
-    opt->learning_rate = lr;
-    
-    return opt;
-}
-
-NcStatus optimizer_sgd_step(Optimizer *opt) {
-    if (!opt) return NC_ERROR_NULL_POINTER;
-    
-    for (int i = 0; i < opt->count; i++) {
-        Tensor *t = opt->params[i];
-        if (t->grad) {
-            double *restrict data = (double*)t->data;
-            const double *restrict grad = t->grad;
-            const double lr = opt->learning_rate;
-            const size_t size = t->size;
-            
-            for (size_t j = 0; j < size; j++) {
-                data[j] -= lr * grad[j];
-            }
-        }
-    }
-    return NC_SUCCESS;
-}
-
-void optimizer_zero_grad(Optimizer *opt) {
-    if (!opt) return;
-    for (int i = 0; i < opt->count; i++) {
-        Tensor *t = opt->params[i];
-        if (t->grad) {
-            for (size_t j = 0; j < t->size; j++) {
-                t->grad[j] = 0.0;
-            }
-        }
-    }
-}
-
-void optimizer_free(Optimizer *opt) {
-    if (!opt) return;
-    free(opt->params);
-    free(opt);
-}
-
-/* --- Adam Optimizer Implementation --- */
+#include <math.h>
+#include <string.h>
 
 AdamOptimizer* optimizer_adam_create(Tensor **params, int count, double lr) {
     AdamOptimizer *opt = (AdamOptimizer*)malloc(sizeof(AdamOptimizer));
@@ -100,14 +44,10 @@ NcStatus optimizer_adam_step(AdamOptimizer *opt) {
         double *restrict v = (double*)opt->v[i]->data;
 
         for (size_t j = 0; j < p->size; j++) {
-            // m = beta1 * m + (1 - beta1) * grad
             m[j] = opt->beta1 * m[j] + (1.0 - opt->beta1) * grad[j];
-            // v = beta2 * v + (1 - beta2) * grad^2
             v[j] = opt->beta2 * v[j] + (1.0 - opt->beta2) * grad[j] * grad[j];
-
             double m_hat = m[j] / bias_correction1;
             double v_hat = v[j] / bias_correction2;
-
             data[j] -= opt->lr * m_hat / (sqrt(v_hat) + opt->epsilon);
         }
     }

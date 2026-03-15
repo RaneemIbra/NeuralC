@@ -13,12 +13,22 @@ add_executable(NeuralC main.c
         Core/Graph.h
         Entities/Model/Model.c
         Entities/Model/Model.h
-        Entities/Layers/ActivationLayer.c
-        Entities/Layers/ActivationLayer.h
-        Entities/Layers/FeedForward/FeedForward.c
-        Entities/Layers/FeedForward/FeedForward.h
-        Utils/Optimizers/Optimizers.c
-        Utils/Optimizers/Optimizers.h
+        Entities/Layers/Activations/ActivationLayer.c
+        Entities/Layers/Activations/ActivationLayer.h
+        Entities/Layers/Linear/LinearLayer.c
+        Entities/Layers/Linear/LinearLayer.h
+        Entities/Layers/Linear/Flatten.c
+        Entities/Layers/Linear/Flatten.h
+        Entities/Layers/Linear/Dropout.c
+        Entities/Layers/Linear/Dropout.h
+        Entities/Layers/Convolution/Conv2d.c
+        Entities/Layers/Convolution/Conv2d.h
+        Entities/Layers/Pooling/Pooling.c
+        Entities/Layers/Pooling/Pooling.h
+        Utils/Optimizers/SGD/SGD.c
+        Utils/Optimizers/SGD/SGD.h
+        Utils/Optimizers/Adam/Adam.c
+        Utils/Optimizers/Adam/Adam.h
         Utils/Initializers/Initializers.c
         Utils/Initializers/Initializers.h
         Utils/ActivationFunctions/ParamActivations/ParamActivations.c

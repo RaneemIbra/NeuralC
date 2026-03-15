@@ -1,6 +1,9 @@
 #ifndef NEURALC_VECTORACTIVATIONS_H
 #define NEURALC_VECTORACTIVATIONS_H
 
+#include "../../../Core/Tensor.h"
+#include "../../../Core/Common.h"
+
 void softmax(const double *input, double *output, int vector_length);
 
 void log_softmax(const double *input, double *output, int vector_length);

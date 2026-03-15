@@ -1,4 +1,5 @@
-#include "FeedForward.h"
+#include "LinearLayer.h"
+#include "../../../Core/Tensor.h"
 #include "../../../Utils/Initializers/Initializers.h"
 #include "../../../Utils/Initializers/BiasInitializers/BiasInitializers.h"
 #include "../../../Core/TensorMath.h"
@@ -8,58 +9,58 @@
 
 /* --- Polymorphic Layer Interface Implementation --- */
 
-static NcStatus dense_layer_forward(Layer *self, int num_inputs, const Tensor **inputs, Tensor **output, NcGraph *graph) {
+static NcStatus linear_layer_forward(Layer *self, int num_inputs, const Tensor **inputs, Tensor **output, NcGraph *graph) {
     if (!self || num_inputs != 1 || !inputs[0] || !output) return NC_ERROR_NULL_POINTER;
-    return forward_pass((FeedForward*)self->layer_data, inputs[0], output, graph);
+    return linear_forward_pass((LinearLayer*)self->layer_data, inputs[0], output, graph);
 }
 
-static NcStatus dense_layer_backward(Layer *self, const Tensor *grad_output, Tensor **grad_input, NcGraph *graph) {
+static NcStatus linear_layer_backward(Layer *self, const Tensor *grad_output, Tensor **grad_input, NcGraph *graph) {
     if (!self || !grad_output || !grad_input) return NC_ERROR_NULL_POINTER;
-    return backward_pass((FeedForward*)self->layer_data, grad_output, grad_input, graph);
+    return linear_backward_pass((LinearLayer*)self->layer_data, grad_output, grad_input, graph);
 }
 
-static Tensor** dense_layer_get_params(Layer *self, int *num_params) {
+static Tensor** linear_layer_get_params(Layer *self, int *num_params) {
     if (!self || !num_params) return NULL;
-    FeedForward *ff = (FeedForward*)self->layer_data;
+    LinearLayer *ll = (LinearLayer*)self->layer_data;
     
     Tensor **params = (Tensor**)malloc(2 * sizeof(Tensor*));
-    params[0] = ff->weights;
-    params[1] = ff->biases;
+    params[0] = ll->weights;
+    params[1] = ll->biases;
     *num_params = 2;
     return params;
 }
 
-static void dense_layer_free(Layer *self) {
+static void linear_layer_free_wrapper(Layer *self) {
     if (!self) return;
     if (self->layer_data) {
-        free_feed_forward((FeedForward*)self->layer_data);
+        free_linear_layer((LinearLayer*)self->layer_data);
         free(self->layer_data);
     }
     if (self->name) free(self->name);
     free(self);
 }
 
-Layer* dense_layer_create(int inputs, int neurons, double (*activation)(double), const char* name, WeightsInitializer init) {
+Layer* linear_layer_create(int inputs, int neurons, double (*activation)(double), const char* name, WeightsInitializer init) {
     Layer *l = (Layer*)malloc(sizeof(Layer));
     if (!l) return NULL;
 
-    l->name = strdup(name ? name : "dense");
+    l->name = strdup(name ? name : "linear_dense");
     l->train_mode = true;
     
-    FeedForward *ff = (FeedForward*)malloc(sizeof(FeedForward));
-    if (!ff) {
+    LinearLayer *ll = (LinearLayer*)malloc(sizeof(LinearLayer));
+    if (!ll) {
         free(l->name);
         free(l);
         return NULL;
     }
 
-    init_feed_forward(ff, inputs, neurons, activation, name, init);
-    l->layer_data = ff;
+    init_linear_layer(ll, inputs, neurons, activation, name, init);
+    l->layer_data = ll;
 
-    l->forward = dense_layer_forward;
-    l->backward = dense_layer_backward;
-    l->get_parameters = dense_layer_get_params;
-    l->free = dense_layer_free;
+    l->forward = linear_layer_forward;
+    l->backward = linear_layer_backward;
+    l->get_parameters = linear_layer_get_params;
+    l->free = linear_layer_free_wrapper;
     l->reset_state = NULL; 
     l->toggle_train = NULL;
     l->save = NULL;
@@ -69,7 +70,7 @@ Layer* dense_layer_create(int inputs, int neurons, double (*activation)(double),
 
 /* --- Internal Implementation --- */
 
-void init_feed_forward(FeedForward *layer, const int inputs_amount, const int neurons_amount,
+void init_linear_layer(LinearLayer *layer, const int inputs_amount, const int neurons_amount,
                        double (*activation_function)(double), const char *activation_name,
                        const WeightsInitializer weights_initializer) {
     if (!layer) return;
@@ -98,14 +99,14 @@ void init_feed_forward(FeedForward *layer, const int inputs_amount, const int ne
     layer->outputs = NULL;
 }
 
-void free_feed_forward(FeedForward *layer) {
+void free_linear_layer(LinearLayer *layer) {
     if (layer == NULL) return;
     if (layer->weights) tensor_free(layer->weights);
     if (layer->biases) tensor_free(layer->biases);
     if (layer->outputs) tensor_free(layer->outputs);
 }
 
-NcStatus forward_pass(FeedForward *layer, const Tensor *inputs, Tensor **output, NcGraph *graph) {
+NcStatus linear_forward_pass(LinearLayer *layer, const Tensor *inputs, Tensor **output, NcGraph *graph) {
     if (!layer || !layer->weights || !inputs || !output) return NC_ERROR_NULL_POINTER;
     layer->last_input = inputs;
 
@@ -137,20 +138,25 @@ NcStatus forward_pass(FeedForward *layer, const Tensor *inputs, Tensor **output,
     return NC_SUCCESS;
 }
 
-NcStatus backward_pass(FeedForward *layer, const Tensor *grad_output, Tensor **grad_input, NcGraph *graph) {
+NcStatus linear_backward_pass(LinearLayer *layer, const Tensor *grad_output, Tensor **grad_input, NcGraph *graph) {
     if (!layer || !grad_output || !grad_input || !layer->last_input) return NC_ERROR_NULL_POINTER;
 
     // 1. dL/db
     if (layer->biases->grad) {
+        printf("    linear_backward: calculating dL/db...\n");
         for (size_t i = 0; i < layer->biases->size; i++) {
             layer->biases->grad[i] += ((double*)grad_output->data)[i];
         }
     }
 
-    // 2. dL/dW = grad_output @ (last_input)^T
+    // 2. dL/dW
+    printf("    linear_backward: calculating dL/dW...\n");
     Tensor *dW = NULL;
     NcStatus status = tensor_matmul_extended(grad_output, false, layer->last_input, true, &dW);
-    if (status != NC_SUCCESS) return status;
+    if (status != NC_SUCCESS) {
+        printf("    linear_backward: dL/dW matmul failed with %d\n", status);
+        return status;
+    }
 
     if (layer->weights->grad) {
         double *restrict W_g = layer->weights->grad;
@@ -159,10 +165,15 @@ NcStatus backward_pass(FeedForward *layer, const Tensor *grad_output, Tensor **g
     }
     tensor_free(dW);
 
-    // 3. dL/dX = W^T @ grad_output
+    // 3. dL/dX
+    printf("    linear_backward: calculating dL/dX...\n");
     status = tensor_matmul_extended(layer->weights, true, grad_output, false, grad_input);
-    if (status != NC_SUCCESS) return status;
+    if (status != NC_SUCCESS) {
+        printf("    linear_backward: dL/dX matmul failed with %d\n", status);
+        return status;
+    }
     if (graph) nc_graph_track(graph, *grad_input);
 
+    printf("    linear_backward: completed.\n");
     return NC_SUCCESS;
 }

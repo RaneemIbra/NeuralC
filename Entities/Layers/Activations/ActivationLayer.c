@@ -42,7 +42,6 @@ static NcStatus activation_backward(Layer *self, const Tensor *grad_output, Tens
     const Tensor *in = data->last_input;
     if (!in) return NC_ERROR_NULL_POINTER;
 
-    // dL/dX = dL/dY * f'(X)
     Tensor *dX = tensor_create(in->dtype, in->shape, in->ndims, in->requires_grad);
     if (!dX) return NC_ERROR_OUT_OF_MEMORY;
     if (graph) nc_graph_track(graph, dX);

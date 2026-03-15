@@ -7,6 +7,7 @@ typedef struct {
     Layer **layers;
     int count;
     int capacity;
+    NcGraph *session_graph; // Persists intermediate tensors for backprop
 } Model;
 
 Model* model_create();

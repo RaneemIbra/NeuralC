@@ -1,5 +1,8 @@
 #include "VectorActivations.h"
+#include "../../../Core/Tensor.h"
 #include <math.h>
+#include <stdlib.h>
+#include <string.h>
 
 void softmax(const double *input, double *output, const int vector_length) {
     double max = input[0];
