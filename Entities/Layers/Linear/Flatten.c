@@ -24,6 +24,7 @@ Layer* flatten_layer_create(const char* name) {
     if (!l) return NULL;
 
     l->name = strdup(name ? name : "flatten");
+    l->type = NC_LAYER_FLATTEN;
     l->train_mode = true;
 
     FlattenLayer *fl = (FlattenLayer*)malloc(sizeof(FlattenLayer));

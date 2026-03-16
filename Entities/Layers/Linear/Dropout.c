@@ -25,6 +25,7 @@ Layer* dropout_layer_create(double rate, const char* name) {
     Layer *l = (Layer*)malloc(sizeof(Layer));
     if (!l) return NULL;
     l->name = strdup(name ? name : "dropout");
+    l->type = NC_LAYER_DROPOUT;
     l->train_mode = true;
     
     DropoutLayer *dl = (DropoutLayer*)malloc(sizeof(DropoutLayer));

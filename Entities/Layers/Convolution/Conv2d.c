@@ -37,6 +37,7 @@ Layer* conv2d_layer_create(int in_c, int out_c, int k_h, int k_w, int s_h, int s
     if (!l) return NULL;
 
     l->name = strdup(name ? name : "conv2d");
+    l->type = NC_LAYER_CONV2D;
     l->train_mode = true;
 
     Conv2dLayer *cl = (Conv2dLayer*)malloc(sizeof(Conv2dLayer));
