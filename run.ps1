@@ -3,10 +3,13 @@ $ErrorActionPreference = "Stop"
 $BuildDir = "build"
 $ExecutableName = "NeuralC"
 
-if (-not (Test-Path $BuildDir)) {
-    New-Item -ItemType Directory -Path $BuildDir | Out-Null
-    Write-Host "Created build directory." -ForegroundColor Cyan
+if (Test-Path $BuildDir) {
+    Write-Host "Cleaning build directory..." -ForegroundColor Cyan
+    Remove-Item -Recurse -Force $BuildDir
 }
+
+New-Item -ItemType Directory -Path $BuildDir | Out-Null
+Write-Host "Created clean build directory." -ForegroundColor Cyan
 
 Write-Host "Configuring project with CMake..." -ForegroundColor Cyan
 cmake -S . -B $BuildDir
