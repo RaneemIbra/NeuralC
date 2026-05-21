@@ -16,69 +16,165 @@
 #include "Core/Tensor.h"
 #include "Core/Common.h"
 #include "Core/Graph.h"
-#include "Utils/Visualizer/Visualizer.h"
-#include "raylib.h"
 
-int main(void) {
-srand(time(NULL));
+void perform_step(Model *model, void *optimizer, bool is_adam, Tensor *x, Tensor *y_true) {
+    Tensor *y_pred = NULL;
+    model_forward(model, x, &y_pred);
     
-    // 1. Setup Pure FeedForward Model (MLP)
-    NcModel *model = model_create();
-    model_add(model, linear_layer_create(2, 16, relu_activation, "input_dense", get_initializer(INIT_HE_NORMAL)));
-    model_add(model, linear_layer_create(16, 8, relu_activation, "hidden_dense", get_initializer(INIT_HE_NORMAL)));
-    model_add(model, linear_layer_create(8, 1, linear_activation, "output_dense", get_initializer(INIT_XAVIER_NORMAL)));
+    double loss = mse_loss(y_pred, y_true);
+    printf("    [Step] Loss: %.6f\n", loss);
+
+    Tensor *grad_output = NULL;
+    mse_loss_derivative(y_pred, y_true, &grad_output);
+    
+    NcGraph *backprop_graph = nc_graph_create();
+    model_backward(model, grad_output, backprop_graph);
+
+    if (is_adam) {
+        optimizer_adam_step((AdamOptimizer*)optimizer);
+    } else {
+        optimizer_sgd_step((SGDOptimizer*)optimizer);
+    }
+
+    nc_graph_free(backprop_graph);
+    tensor_free(grad_output);
+}
+
+void run_ffn_sgd_demo() {
+    printf("\n--- Demo 1: Simple FFN with SGD ---\n");
+    Model *model = model_create();
+    model_add(model, linear_layer_create(2, 4, relu_activation, "hidden1", get_initializer(INIT_XAVIER_UNIFORM)));
+    model_add(model, linear_layer_create(4, 1, linear_activation, "output", get_initializer(INIT_XAVIER_UNIFORM)));
 
     int p_count;
     Tensor **params = model_get_parameters(model, &p_count);
-    AdamOptimizer *opt = optimizer_adam_create(params, p_count, 0.01);
+    SGDOptimizer *opt = optimizer_sgd_create(params, p_count, 0.1);
 
-    InitWindow(1280, 720, "NeuralC - Real-time Visualization");
-    SetTargetFPS(60);
+    int in_s[] = {2, 1};
+    Tensor *x = tensor_zeros(DTYPE_FLOAT64, in_s, 2, false);
+    ((double*)x->data)[0] = 1.0; ((double*)x->data)[1] = 0.5;
 
-    VisState state = {
-        .loss_history = calloc(1000, sizeof(float)),
-        .history_count = 0,
-        .history_capacity = 1000,
-        .is_training = true,
-        .camera = { 
-            .offset = (Vector2){ 400, 360 }, 
-            .target = (Vector2){ 0, 110 }, 
-            .rotation = 0.0f, 
-            .zoom = 1.0f 
-        },
-        .selected_layer = -1,
-        .hovered_layer = -1
-    };
+    int t_s[] = {1, 1};
+    Tensor *y = tensor_zeros(DTYPE_FLOAT64, t_s, 2, false);
+    ((double*)y->data)[0] = 5.0;
 
-    while (!WindowShouldClose()) {
-        int in_s[] = {2, 1}; // Input size 2
-        Tensor *x = tensor_zeros(DTYPE_FLOAT64, in_s, 2, false);
-        ((double*)x->data)[0] = (double)rand()/RAND_MAX;
-        
-        int t_s[] = {1, 1};
-        Tensor *y_true = tensor_zeros(DTYPE_FLOAT64, t_s, 2, false);
-        ((double*)y_true->data)[0] = 0.5; // Target
+    perform_step(model, opt, false, x, y);
 
-        Tensor *y_pred = NULL;
-        model_forward(model, x, &y_pred);
-        double loss = mse_loss(y_pred, y_true);
-        
-        visualizer_add_loss(&state, (float)loss);
+    tensor_free(x); tensor_free(y);
+    optimizer_sgd_free(opt); free(params); model_free(model);
+    printf("Demo 1: Success.\n");
+}
 
-        Tensor *grad_output = NULL;
-        mse_loss_derivative(y_pred, y_true, &grad_output);
-        NcGraph *g = nc_graph_create();
-        model_backward(model, grad_output, g);
-        optimizer_adam_step(opt);
+void run_ffn_adam_demo() {
+    printf("\n--- Demo 2: Simple FFN with Adam ---\n");
+    Model *model = model_create();
+    model_add(model, linear_layer_create(2, 4, relu_activation, "hidden1", get_initializer(INIT_HE_NORMAL)));
+    model_add(model, linear_layer_create(4, 1, linear_activation, "output", get_initializer(INIT_XAVIER_NORMAL)));
 
-        visualizer_run(model, &state);
+    int p_count;
+    Tensor **params = model_get_parameters(model, &p_count);
+    AdamOptimizer *opt = optimizer_adam_create(params, p_count, 0.001);
 
-        nc_graph_free(g);
-        tensor_free(grad_output);
-        tensor_free(x);
-        tensor_free(y_true);
-    }
+    int in_s[] = {2, 1};
+    Tensor *x = tensor_zeros(DTYPE_FLOAT64, in_s, 2, false);
+    int t_s[] = {1, 1};
+    Tensor *y = tensor_zeros(DTYPE_FLOAT64, t_s, 2, false);
 
-    CloseWindow();
+    perform_step(model, opt, true, x, y);
+
+    tensor_free(x); tensor_free(y);
+    optimizer_adam_free(opt); free(params); model_free(model);
+    printf("Demo 2: Success.\n");
+}
+
+void run_deep_ffn_demo() {
+    printf("\n--- Demo 3: Deep FFN (5 Layers) ---\n");
+    Model *model = model_create();
+    model_add(model, linear_layer_create(10, 64, relu_activation, "h1", get_initializer(INIT_HE_NORMAL)));
+    model_add(model, linear_layer_create(64, 64, relu_activation, "h2", get_initializer(INIT_HE_NORMAL)));
+    model_add(model, linear_layer_create(64, 32, relu_activation, "h3", get_initializer(INIT_HE_NORMAL)));
+    model_add(model, linear_layer_create(32, 16, relu_activation, "h4", get_initializer(INIT_HE_NORMAL)));
+    model_add(model, linear_layer_create(16, 2, linear_activation, "out", get_initializer(INIT_XAVIER_NORMAL)));
+
+    int p_count;
+    Tensor **params = model_get_parameters(model, &p_count);
+    AdamOptimizer *opt = optimizer_adam_create(params, p_count, 0.001);
+
+    int in_s[] = {10, 1};
+    Tensor *x = tensor_zeros(DTYPE_FLOAT64, in_s, 2, false);
+    int t_s[] = {2, 1};
+    Tensor *y = tensor_zeros(DTYPE_FLOAT64, t_s, 2, false);
+
+    perform_step(model, opt, true, x, y);
+
+    tensor_free(x); tensor_free(y);
+    optimizer_adam_free(opt); free(params); model_free(model);
+    printf("Demo 3: Success.\n");
+}
+
+void run_basic_cnn_demo() {
+    printf("\n--- Demo 4: Basic CNN (Conv -> Pool -> FC) ---\n");
+    Model *model = model_create();
+    model_add(model, conv2d_layer_create(1, 4, 3, 3, 1, 1, 1, 1, "conv1", get_initializer(INIT_XAVIER_UNIFORM)));
+    model_add(model, activation_layer_create(relu_activation, relu_derivative, "relu1"));
+    model_add(model, pooling_layer_create(POOL_MAX, 2, 2, 2, 2, "pool1"));
+    model_add(model, flatten_layer_create("flatten"));
+    model_add(model, linear_layer_create(4*7*7, 10, linear_activation, "fc1", get_initializer(INIT_XAVIER_NORMAL)));
+
+    int p_count;
+    Tensor **params = model_get_parameters(model, &p_count);
+    SGDOptimizer *opt = optimizer_sgd_create(params, p_count, 0.01);
+
+    int in_s[] = {1, 14, 14};
+    Tensor *x = tensor_zeros(DTYPE_FLOAT64, in_s, 3, false);
+    int t_s[] = {10, 1};
+    Tensor *y = tensor_zeros(DTYPE_FLOAT64, t_s, 2, false);
+
+    perform_step(model, opt, false, x, y);
+
+    tensor_free(x); tensor_free(y);
+    optimizer_sgd_free(opt); free(params); model_free(model);
+    printf("Demo 4: Success.\n");
+}
+
+void run_advanced_cnn_demo() {
+    printf("\n--- Demo 5: Advanced CNN (Dropout + GAP) ---\n");
+    Model *model = model_create();
+    model_add(model, conv2d_layer_create(3, 8, 3, 3, 1, 1, 1, 1, "conv1", get_initializer(INIT_HE_NORMAL)));
+    model_add(model, activation_layer_create(relu_activation, relu_derivative, "relu1"));
+    model_add(model, dropout_layer_create(0.2, "drop1"));
+    model_add(model, conv2d_layer_create(8, 16, 3, 3, 1, 1, 1, 1, "conv2", get_initializer(INIT_HE_NORMAL)));
+    model_add(model, activation_layer_create(relu_activation, relu_derivative, "relu2"));
+    model_add(model, global_average_pooling_layer_create("gap")); // Output [16, 1, 1]
+    model_add(model, flatten_layer_create("flatten"));
+    model_add(model, linear_layer_create(16, 5, linear_activation, "fc_out", get_initializer(INIT_XAVIER_NORMAL)));
+
+    int p_count;
+    Tensor **params = model_get_parameters(model, &p_count);
+    AdamOptimizer *opt = optimizer_adam_create(params, p_count, 0.001);
+
+    int in_s[] = {3, 32, 32};
+    Tensor *x = tensor_zeros(DTYPE_FLOAT64, in_s, 3, false);
+    int t_s[] = {5, 1};
+    Tensor *y = tensor_zeros(DTYPE_FLOAT64, t_s, 2, false);
+
+    perform_step(model, opt, true, x, y);
+
+    tensor_free(x); tensor_free(y);
+    optimizer_adam_free(opt); free(params); model_free(model);
+    printf("Demo 5: Success.\n");
+}
+
+int main(void) {
+    srand((unsigned int)time(NULL));
+    printf("=== NeuralC: Comprehensive Model Suite ===\n");
+
+    run_ffn_sgd_demo();
+    run_ffn_adam_demo();
+    run_deep_ffn_demo();
+    run_basic_cnn_demo();
+    run_advanced_cnn_demo();
+
+    printf("\nAll demonstrations completed successfully!\n");
     return 0;
 }

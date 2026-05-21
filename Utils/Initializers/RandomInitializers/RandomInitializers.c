@@ -2,10 +2,6 @@
 #include <math.h>
 #include <stdlib.h>
 
-#ifndef M_PI
-    #define M_PI 3.14159265358979323846
-#endif
-
 double random_uniform_initializer(const double min, const double max) {
     return min + (double) rand() / RAND_MAX * (max - min);
 }

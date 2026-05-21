@@ -3,8 +3,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-NcModel* model_create() {
-    NcModel *m = (NcModel*)malloc(sizeof(NcModel));
+Model* model_create() {
+    Model *m = (Model*)malloc(sizeof(Model));
     if (!m) return NULL;
     m->capacity = 10;
     m->count = 0;
@@ -17,7 +17,7 @@ NcModel* model_create() {
     return m;
 }
 
-void model_add(NcModel *m, Layer *l) {
+void model_add(Model *m, Layer *l) {
     if (!m || !l) return;
     if (m->count >= m->capacity) {
         m->capacity *= 2;
@@ -26,7 +26,7 @@ void model_add(NcModel *m, Layer *l) {
     m->layers[m->count++] = l;
 }
 
-NcStatus model_forward(NcModel *m, const Tensor *input, Tensor **output) {
+NcStatus model_forward(Model *m, const Tensor *input, Tensor **output) {
     if (!m || !output) return NC_ERROR_NULL_POINTER;
     
     if (m->session_graph) nc_graph_free(m->session_graph);
@@ -50,7 +50,7 @@ NcStatus model_forward(NcModel *m, const Tensor *input, Tensor **output) {
     return NC_SUCCESS;
 }
 
-NcStatus model_backward(NcModel *m, const Tensor *grad_output, NcGraph *graph) {
+NcStatus model_backward(Model *m, const Tensor *grad_output, NcGraph *graph) {
     if (!m || !grad_output) return NC_ERROR_NULL_POINTER;
     const Tensor *curr_grad = grad_output;
     for (int i = m->count - 1; i >= 0; i--) {
@@ -62,7 +62,7 @@ NcStatus model_backward(NcModel *m, const Tensor *grad_output, NcGraph *graph) {
     return NC_SUCCESS;
 }
 
-Tensor** model_get_parameters(NcModel *m, int *count) {
+Tensor** model_get_parameters(Model *m, int *count) {
     if (!m || !count) return NULL;
     int total = 0;
     for (int i = 0; i < m->count; i++) {
@@ -88,7 +88,7 @@ Tensor** model_get_parameters(NcModel *m, int *count) {
     return all_params;
 }
 
-void model_free(NcModel *m) {
+void model_free(Model *m) {
     if (!m) return;
     if (m->session_graph) nc_graph_free(m->session_graph);
     for (int i = 0; i < m->count; i++) {

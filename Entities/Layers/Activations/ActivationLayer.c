@@ -75,7 +75,6 @@ Layer* activation_layer_create(double (*activation)(double), double (*derivative
     if (!l) return NULL;
 
     l->name = strdup(name ? name : "activation");
-    l->type = NC_LAYER_ACTIVATION;
     l->train_mode = true;
 
     ActivationData *data = (ActivationData*)malloc(sizeof(ActivationData));

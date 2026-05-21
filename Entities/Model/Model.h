@@ -8,13 +8,13 @@ typedef struct {
     int count;
     int capacity;
     NcGraph *session_graph;
-} NcModel;
+} Model;
 
-NcModel* model_create();
-void model_add(NcModel *m, Layer *l);
-NcStatus model_forward(NcModel *m, const Tensor *input, Tensor **output);
-NcStatus model_backward(NcModel *m, const Tensor *grad_output, NcGraph *graph);
-Tensor** model_get_parameters(NcModel *m, int *count);
-void model_free(NcModel *m);
+Model* model_create();
+void model_add(Model *m, Layer *l);
+NcStatus model_forward(Model *m, const Tensor *input, Tensor **output);
+NcStatus model_backward(Model *m, const Tensor *grad_output, NcGraph *graph);
+Tensor** model_get_parameters(Model *m, int *count);
+void model_free(Model *m);
 
 #endif //NEURALC_MODEL_H

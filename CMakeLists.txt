@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 4.0)
 project(NeuralC C)
-find_package(raylib REQUIRED)
+
+add_compile_definitions(_USE_MATH_DEFINES)
 
 set(CMAKE_C_STANDARD 11)
 
@@ -50,7 +51,4 @@ add_executable(NeuralC main.c
         Utils/LossFunctions/LossFunctions.h
         Utils/LossFunctions/RegressionsLosses.c
         Utils/LossFunctions/ClassificationLosses.c
-        Utils/LossFunctions/ProbabilisticLosses.c
-        Utils/Visualizer/Visualizer.c)
-
-target_link_libraries(NeuralC PRIVATE raylib ${PLATFORM_LIBS})
+        Utils/LossFunctions/ProbabilisticLosses.c)

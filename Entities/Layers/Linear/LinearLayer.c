@@ -43,7 +43,6 @@ Layer* linear_layer_create(int inputs, int neurons, double (*activation)(double)
     if (!l) return NULL;
 
     l->name = strdup(name ? name : "linear_dense");
-    l->type = NC_LAYER_LINEAR;
     l->train_mode = true;
     
     LinearLayer *ll = (LinearLayer*)malloc(sizeof(LinearLayer));

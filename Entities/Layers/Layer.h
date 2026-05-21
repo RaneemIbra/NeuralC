@@ -5,19 +5,8 @@
 #include "../../Core/Common.h"
 #include "../../Core/Graph.h"
 
-typedef enum {
-    NC_LAYER_LINEAR,
-    NC_LAYER_CONV2D,
-    NC_LAYER_POOLING,
-    NC_LAYER_ACTIVATION,
-    NC_LAYER_DROPOUT,
-    NC_LAYER_FLATTEN,
-    NC_LAYER_UNKNOWN
-} NcLayerType;
-
 typedef struct Layer {
     char *name;
-    NcLayerType type;
     void *layer_data; 
     bool train_mode;
 
