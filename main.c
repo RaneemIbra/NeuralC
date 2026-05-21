@@ -204,7 +204,7 @@ void cnn_conv_relu_adam_maxpool() {
     model_add(model, activation_layer_create(relu_activation, relu_derivative, "relu1"));
     model_add(model, pooling_layer_create(POOL_MAX, 2, 2, 2, 2, "pool1"));
     model_add(model, flatten_layer_create("flatten"));
-    model_add(model, linear_layer_create(8*7*7, 16, relu_activation, "fc1", get_initializer(INIT_HE_NORMAL)));
+    model_add(model, linear_layer_create(8*8*8, 16, relu_activation, "fc1", get_initializer(INIT_HE_NORMAL)));
     model_add(model, linear_layer_create(16, 4, linear_activation, "fc_out", get_initializer(INIT_XAVIER_NORMAL)));
 
     int p_count;
