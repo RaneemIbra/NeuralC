@@ -15,6 +15,10 @@ add_executable(NeuralC main.c
         Core/Graph.h
         Core/Training.h
         Core/Training.c
+        Demos/CNN_demos.c
+        Demos/CNN_demos.h
+        Demos/FFN_demos.c
+        Demos/FFN_demos.h
         Entities/Model/Model.c
         Entities/Model/Model.h
         Entities/Layers/Activations/ActivationLayer.c

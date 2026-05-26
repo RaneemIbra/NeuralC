@@ -1,3 +1,4 @@
+#include "Training.h"
 #include "../Entities/Model/Model.h"
 #include "../Utils/Optimizers/SGD/SGD.h"
 #include "../Utils/Optimizers/Adam/Adam.h"
