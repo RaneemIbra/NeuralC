@@ -10,7 +10,6 @@ double selu_activation(double input);
 
 double prelu_activation(double input, double alpha);
 
-/* Derivatives */
 double elu_derivative(double input, double alpha);
 double prelu_derivative(double input, double alpha);
 

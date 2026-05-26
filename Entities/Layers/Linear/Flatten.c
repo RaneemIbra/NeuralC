@@ -43,7 +43,6 @@ Layer* flatten_layer_create(const char* name) {
 NcStatus flatten_forward(FlattenLayer *layer, const Tensor *input, Tensor **output, NcGraph *graph) {
     if (!layer || !input || !output) return NC_ERROR_NULL_POINTER;
 
-    // Cache original shape for backprop
     layer->input_ndims = input->ndims;
     for (int i = 0; i < input->ndims; i++) layer->input_shape[i] = input->shape[i];
 
