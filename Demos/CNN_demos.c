@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "CNN_demos.h"
 #include "../Entities/Model/Model.h"
 #include "../Entities/Layers/Linear/LinearLayer.h"
