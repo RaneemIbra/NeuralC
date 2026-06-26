@@ -1,5 +1,3 @@
-#!/bin/bash
-
 set -e
 
 BuildDir="build"
@@ -14,7 +12,7 @@ mkdir -p "$BuildDir"
 echo -e "\033[36mCreated clean build directory.\033[0m"
 
 echo -e "\033[36mConfiguring project with CMake...\033[0m"
-cmake -S . -B "$BuildDir"
+cmake -S . -B "$BuildDir" -DCMAKE_BUILD_TYPE=Release
 
 echo -e "\033[36mBuilding the project...\033[0m"
 cmake --build "$BuildDir" --config Release

@@ -3,6 +3,10 @@ project(NeuralC C)
 
 set(CMAKE_C_STANDARD 11)
 
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
+endif()
+
 add_executable(NeuralC 
     main.c
     Core/Tensor.c
@@ -57,4 +61,7 @@ target_include_directories(NeuralC PRIVATE
 )
 
 add_compile_definitions(_USE_MATH_DEFINES)
-target_link_libraries(NeuralC m)
+
+if(NOT WIN32)
+    target_link_libraries(NeuralC m)
+endif()
