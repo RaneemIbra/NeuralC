@@ -12,7 +12,7 @@ New-Item -ItemType Directory -Path $BuildDir | Out-Null
 Write-Host "Created clean build directory." -ForegroundColor Cyan
 
 Write-Host "Configuring project with CMake..." -ForegroundColor Cyan
-cmake -S . -B $BuildDir
+cmake -S . -B $BuildDir -G "MinGW Makefiles"
 
 Write-Host "Building the project..." -ForegroundColor Cyan
 cmake --build $BuildDir --config Release
